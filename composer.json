@@ -1,7 +1,8 @@
 {
     "name": "wwwision/privateresources",
     "type": "typo3-flow-package",
-    "description": "Add description here",
+    "description": "A TYPO3 Flow package that allows for protecting persistent resources from unauthorized access",
+    "license": "MIT",
     "require": {
         "typo3/flow": "*"
     },
