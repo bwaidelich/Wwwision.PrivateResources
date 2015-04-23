@@ -124,6 +124,25 @@ TYPO3:
 
 You can implement your own strategy for serving files, implementing the ``FileServeStrategyInterface``.
 
+Signals
+-------
+
+The HTTP Component triggers a signal whenever a protected resource is being accessed (see Flow documentation regarding
+more details about **Signals and Slots**).
+You can use that signal to count file downloads for example:
+
+```php
+/**
+ * @param Bootstrap $bootstrap The current bootstrap
+ * @return void
+ */
+public function boot(Bootstrap $bootstrap) {
+	$dispatcher = $bootstrap->getSignalSlotDispatcher();
+	$dispatcher->connect('Wwwision\PrivateResources\Http\Component\ProtectedResourceComponent', 'resourceServed', function(Resource $resource, HttpRequest $httpRequest) {
+		// increase counter for the given $resource
+	});
+}
+```
 
 Known issues and limitations
 ----------------------------
