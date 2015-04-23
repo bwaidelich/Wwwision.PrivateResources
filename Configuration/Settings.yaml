@@ -1,0 +1,37 @@
+TYPO3:
+  Flow:
+    http:
+      chain:
+        'process':
+          chain:
+            'protectedResources':
+              position: 'before routing'
+              component: 'Wwwision\PrivateResources\Http\Component\ProtectedResourceComponent'
+              componentOptions:
+                 # absolute root path of resources
+                basePath: '%FLOW_PATH_DATA%Persistent/Resources/'
+
+                 # how the file should be served (see README)
+                serveStrategy: 'Wwwision\PrivateResources\Http\FileServeStrategy\ReadfileStrategy'
+
+                 # time (in seconds) before a token is expired, 0 = no expiration
+                tokenLifetime: 0
+
+    resource:
+      targets:
+        'protectedResourcesTarget':
+          target: 'Wwwision\PrivateResources\Resource\Target\ProtectedResourceTarget'
+
+
+##     uncomment the following lines to create a new collection "protectedResources"
+      collections:
+        'protectedResources':
+          storage: 'defaultPersistentResourcesStorage'
+          target: 'protectedResourcesTarget'
+
+
+
+#   uncomment the following lines to protect all resources of the default "persistent" collection - HEADS UP: only do this if you know what you're up to -
+      collections:
+        'persistent':
+          target: 'protectedResourcesTarget'
