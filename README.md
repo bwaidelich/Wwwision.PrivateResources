@@ -122,7 +122,8 @@ TYPO3:
 
 #### Custom strategy ####
 
-You can implement your own strategy for serving files, implementing the ``FileServeStrategyInterface``.
+You can create your own strategy for serving files, implementing the ``FileServeStrategyInterface``.
+With this you could for example realize protected CDN resources.
 
 Signals
 -------
