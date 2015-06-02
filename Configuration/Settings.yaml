@@ -24,14 +24,14 @@ TYPO3:
 
 
 ##     uncomment the following lines to create a new collection "protectedResources"
-      collections:
-        'protectedResources':
-          storage: 'defaultPersistentResourcesStorage'
-          target: 'protectedResourcesTarget'
+#      collections:
+#        'protectedResources':
+#          storage: 'defaultPersistentResourcesStorage'
+#          target: 'protectedResourcesTarget'
 
 
 
-#   uncomment the following lines to protect all resources of the default "persistent" collection - HEADS UP: only do this if you know what you're up to -
-      collections:
-        'persistent':
-          target: 'protectedResourcesTarget'
+##   uncomment the following lines to protect all resources of the default "persistent" collection - HEADS UP: only do this if you know what you're up to -
+#      collections:
+#        'persistent':
+#          target: 'protectedResourcesTarget'
