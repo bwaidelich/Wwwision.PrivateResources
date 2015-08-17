@@ -17,6 +17,14 @@ only work for users with *the same privileges as the current user*.
 That means, if an image is rendered to an authenticated user, the image URL will only resolve for users with *the same
 roles*, for other users it will return an HTTP status of ``403 Forbidden``.
 
+Disclaimer:
+-----------
+
+With this package user's can't easily share URLs to protected resources as they will only work for users with the same
+roles. However, resources will still be downloaded obviously and users can share them otherwise.
+Furthermore serving private resources consumes more time and memory because every hit triggers a PHP request.
+Conclusion: This package is only useful in very rare cases ;) 
+
 How-To:
 -------
 
