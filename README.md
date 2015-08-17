@@ -1,7 +1,7 @@
 Wwwision.PrivateResources
 =========================
 
-This is a TYPO3 Flow package that allows for protecting persistent resources from unauthorized access.
+This is a Flow package that allows for protecting persistent resources from unauthorized access.
 
 By default Flow publishes persistent resources to the ``_Resources/Persistent`` folder inside the web root making them
 accessible to browsers and other clients (unless using a different ``PublishingTarget``, see below).
@@ -148,7 +148,7 @@ public function boot(Bootstrap $bootstrap) {
 Known issues and limitations
 ----------------------------
 
-* This package works well with TYPO3 Neos, but Neos currently doesn't offer a way to select a *resource collection*
+* This package works well with [Neos CMS](https://www.neos.io), but Neos currently doesn't offer a way to select a *resource collection*
   when uploading files or working with the Media Module. You can, however, activate protected resources globally (see
   above) or create custom editors for your protected file uploads
 * Private resources currently only work for **persistent** resources. **Static** resources are not yet covered

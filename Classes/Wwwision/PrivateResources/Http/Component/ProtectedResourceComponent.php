@@ -97,7 +97,7 @@ class ProtectedResourceComponent implements ComponentInterface {
 		}
 
 		// TODO there should be a better way to determine the absolute path of the resource? Resource::createTemporaryLocalCopy() is too expensive
-		$resourcePathAndFilename = Files::concatenatePaths(array($this->options['basePath'], wordwrap($tokenData['resourceIdentifier'], 5, '/', TRUE), $tokenData['resourceIdentifier']));
+		$resourcePathAndFilename = Files::concatenatePaths(array($this->options['basePath'], $tokenData['resourceIdentifier'][0], $tokenData['resourceIdentifier'][1], $tokenData['resourceIdentifier'][2], $tokenData['resourceIdentifier'][3], $tokenData['resourceIdentifier']));
 		if (!is_file($resourcePathAndFilename)) {
 			throw new FileNotFoundException(sprintf('File not found!%sThe file "%s" does not exist', chr(10), $resourcePathAndFilename), 1429702284);
 		}
