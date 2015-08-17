@@ -128,10 +128,14 @@ class ProtectedResourceTarget implements TargetInterface {
 	 */
 	public function getPublicPersistentResourceUri(Resource $resource) {
 		$resourceData = array(
-			'timestamp' => $this->now->format(\DateTime::ISO8601),
 			'securityContextHash' => $this->securityContext->getContextHash(),
-			'resourceIdentifier' => $resource->getSha1()
+			'resourceIdentifier' => $resource->getSha1(),
 		);
+		if (!empty($this->options['tokenLifetime'])) {
+			$expirationDateTime = clone $this->now;
+			$expirationDateTime = $expirationDateTime->modify(sprintf('+%d seconds', $this->options['tokenLifetime']));
+			$resourceData['expirationDateTime'] = $expirationDateTime->format(\DateTime::ISO8601);
+		}
 		$encodedResourceData = base64_encode(json_encode($resourceData));
 		$signedResourceData = $this->hashService->appendHmac($encodedResourceData);
 		return $this->detectResourcesBaseUri() . '?__protectedResource=' . $signedResourceData;

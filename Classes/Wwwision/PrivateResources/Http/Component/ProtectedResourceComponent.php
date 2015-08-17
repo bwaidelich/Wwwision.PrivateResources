@@ -126,18 +126,15 @@ class ProtectedResourceComponent implements ComponentInterface {
 	 * @throws AccessDeniedException
 	 */
 	protected function verifyExpiration(array $tokenData) {
-		# tokenLifetime === 0 => it never expires
-		if (empty($this->options['tokenLifetime'])) {
+		if (!isset($tokenData['expirationDateTime'])) {
 			return;
 		}
-		$creationDateTime = \DateTime::createFromFormat(\DateTime::ISO8601, $tokenData['timestamp']);
-		$expirationDateTime = clone $creationDateTime;
-		$expirationDateTime = $expirationDateTime->modify(sprintf('+%d seconds', $this->options['tokenLifetime']));
+		$expirationDateTime = \DateTime::createFromFormat(\DateTime::ISO8601, $tokenData['expirationDateTime']);
 		if ($this->now instanceof DependencyProxy) {
 			$this->now->_activateDependency();
 		}
 		if ($expirationDateTime < $this->now) {
-			throw new AccessDeniedException(sprintf('Token expired!%sThis request is signed at "%s", but expired at "%s"', chr(10), $creationDateTime->format(\DateTime::ISO8601), $expirationDateTime->format(\DateTime::ISO8601)), 1429697439);
+			throw new AccessDeniedException(sprintf('Token expired!%sThis token expired at "%s"', chr(10), $expirationDateTime->format(\DateTime::ISO8601)), 1429697439);
 		}
 	}
 

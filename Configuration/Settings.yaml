@@ -14,13 +14,13 @@ TYPO3:
                  # how the file should be served (see README)
                 serveStrategy: 'Wwwision\PrivateResources\Http\FileServeStrategy\ReadfileStrategy'
 
-                 # time (in seconds) before a token is expired, 0 = no expiration
-                tokenLifetime: 0
-
     resource:
       targets:
         'protectedResourcesTarget':
           target: 'Wwwision\PrivateResources\Resource\Target\ProtectedResourceTarget'
+          targetOptions:
+             # time (in seconds) before a token is expired, 0 = no expiration
+            tokenLifetime: 0
 
 
 ##     uncomment the following lines to create a new collection "protectedResources"
@@ -31,7 +31,7 @@ TYPO3:
 
 
 
-##   uncomment the following lines to protect all resources of the default "persistent" collection - HEADS UP: only do this if you know what you're up to -
+##     uncomment the following lines to protect all resources of the default "persistent" collection - HEADS UP: only do this if you know what you're up to -
 #      collections:
 #        'persistent':
 #          target: 'protectedResourcesTarget'
