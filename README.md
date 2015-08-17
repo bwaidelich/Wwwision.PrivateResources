@@ -91,6 +91,25 @@ With this configuration, tokens will expire after 86400 seconds (= one day).
 **NOTE:** If the publishing of the resource is cached, this might lead to broken resources (e.g. if you use this within
 Neos CMS within a Node Type with a cache lifetime larger than the tokenLifetime).
 
+#### Whitelist Roles ####
+
+Sometimes you want to prevent resources from being protected if a certain role is authenticated. With the ``whitelistRoles``
+option you can disable the token enforcement for individual roles (The token will still be generated but it won't be
+verified any longer if one of the specified roles is authenticated):
+
+```yaml
+TYPO3:
+  Flow:
+    resource:
+      targets:
+        'protectedResourcesTarget':
+          targetOptions:
+            whitelistRoles: ['Your.Package:SomeRole']
+```
+
+By default, the ``TYPO3.Neos:Editor`` role is whitelisted, so that this package can be used within Neos CMS without
+caching issues.
+
 ### HTTP Component ###
 
 The actual serving of protected files is done using a ``HTTP Component`` that will be triggered even before the regular

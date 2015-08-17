@@ -128,10 +128,11 @@ class ProtectedResourceTarget implements TargetInterface {
 	 */
 	public function getPublicPersistentResourceUri(Resource $resource) {
 		$resourceData = array(
-			'securityContextHash' => $this->securityContext->getContextHash(),
-			'resourceIdentifier' => $resource->getSha1(),
+			'resourceIdentifier' => $resource->getSha1()
 		);
-		if (!empty($this->options['tokenLifetime'])) {
+		if ($this->shouldIncludeSecurityContext()) {
+			$resourceData['securityContextHash'] = $this->securityContext->getContextHash();
+		} elseif (!empty($this->options['tokenLifetime'])) {
 			$expirationDateTime = clone $this->now;
 			$expirationDateTime = $expirationDateTime->modify(sprintf('+%d seconds', $this->options['tokenLifetime']));
 			$resourceData['expirationDateTime'] = $expirationDateTime->format(\DateTime::ISO8601);
@@ -139,6 +140,21 @@ class ProtectedResourceTarget implements TargetInterface {
 		$encodedResourceData = base64_encode(json_encode($resourceData));
 		$signedResourceData = $this->hashService->appendHmac($encodedResourceData);
 		return $this->detectResourcesBaseUri() . '?__protectedResource=' . $signedResourceData;
+	}
+
+	/**
+	 * @return boolean
+	 */
+	protected function shouldIncludeSecurityContext() {
+		if (!isset($this->options['whitelistRoles'])) {
+			return TRUE;
+		}
+		foreach ($this->options['whitelistRoles'] as $roleIdentifier) {
+			if ($this->securityContext->hasRole($roleIdentifier)) {
+				return FALSE;
+			}
+		}
+		return TRUE;
 	}
 
 	/**

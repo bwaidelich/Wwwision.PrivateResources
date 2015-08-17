@@ -147,6 +147,9 @@ class ProtectedResourceComponent implements ComponentInterface {
 	 * @throws AccessDeniedException
 	 */
 	protected function verifySecurityContextHash(array $tokenData, HttpRequest $httpRequest) {
+		if (!isset($tokenData['securityContextHash'])) {
+			return;
+		}
 		/** @var $actionRequest ActionRequest */
 		$actionRequest = $this->objectManager->get(ActionRequest::class, $httpRequest);
 		$this->securityContext->setRequest($actionRequest);
