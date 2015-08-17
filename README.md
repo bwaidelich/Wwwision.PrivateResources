@@ -72,6 +72,25 @@ TYPO3:
 **NOTE:** Serving protected resources will have a negative effect on performance and memory consumption - only activate
 this globally, if you really want to protect *all* persistent resources.
 
+#### Token Lifetime ####
+
+By default a token never expires. You can change that with the ``tokenLifetime`` option:
+
+```yaml
+TYPO3:
+  Flow:
+    resource:
+      targets:
+        'protectedResourcesTarget':
+          targetOptions:
+            tokenLifetime: 86400
+```
+
+With this configuration, tokens will expire after 86400 seconds (= one day).
+
+**NOTE:** If the publishing of the resource is cached, this might lead to broken resources (e.g. if you use this within
+Neos CMS within a Node Type with a cache lifetime larger than the tokenLifetime).
+
 ### HTTP Component ###
 
 The actual serving of protected files is done using a ``HTTP Component`` that will be triggered even before the regular
