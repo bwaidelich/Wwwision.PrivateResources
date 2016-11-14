@@ -111,6 +111,8 @@ class ProtectedResourceComponent implements ComponentInterface {
 		}
 		$httpResponse = $componentContext->getHttpResponse();
 		$httpResponse->setHeader('Content-Type', $resource->getMediaType());
+		$httpResponse->setHeader('Content-Disposition', 'attachment;filename="' . $resource->getFilename() . '"');
+		$httpResponse->setHeader('Content-Length', $resource->getFileSize());
 
 		$this->emitResourceServed($resource, $httpRequest);
 
