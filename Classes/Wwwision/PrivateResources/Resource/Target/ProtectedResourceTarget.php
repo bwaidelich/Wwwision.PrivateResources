@@ -85,10 +85,10 @@ class ProtectedResourceTarget implements TargetInterface {
 	}
 
 	/**
-	 * @param Collection $collection The collection to publish
+	 * @param CollectionInterface $collection The collection to publish
 	 * @return void
 	 */
-	public function publishCollection(Collection $collection) {
+	public function publishCollection(CollectionInterface $collection) {
 		// publishing is not required for protected resources
 	}
 
