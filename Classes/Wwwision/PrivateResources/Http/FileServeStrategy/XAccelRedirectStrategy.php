@@ -15,15 +15,17 @@ use TYPO3\Flow\Http\Response as HttpResponse;
  *
  * @Flow\Scope("singleton")
  */
-class XAccelRedirectStrategy implements FileServeStrategyInterface {
+class XAccelRedirectStrategy implements FileServeStrategyInterface
+{
 
-	/**
-	 * @param string $filePathAndName Absolute path to the file to serve
-	 * @param HttpResponse $httpResponse The current HTTP response (allows setting headers, ...)
-	 * @return void
-	 */
-	public function serve($filePathAndName, HttpResponse $httpResponse) {
-		$httpResponse->setHeader('X-Accel-Redirect', $filePathAndName);
-	}
+    /**
+     * @param string $filePathAndName Absolute path to the file to serve
+     * @param HttpResponse $httpResponse The current HTTP response (allows setting headers, ...)
+     * @return void
+     */
+    public function serve($filePathAndName, HttpResponse $httpResponse)
+    {
+        $httpResponse->setHeader('X-Accel-Redirect', $filePathAndName);
+    }
 
 }

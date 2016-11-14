@@ -10,11 +10,12 @@ use TYPO3\Flow\Exception as FlowException;
 /**
  * An exception that is thrown if a specified resource/file could not be found
  */
-class FileNotFoundException extends FlowException {
+class FileNotFoundException extends FlowException
+{
 
-	/**
-	 * @var integer
-	 */
-	protected $statusCode = 404;
+    /**
+     * @var integer
+     */
+    protected $statusCode = 404;
 
 }

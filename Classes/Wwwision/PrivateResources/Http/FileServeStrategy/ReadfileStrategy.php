@@ -15,17 +15,19 @@ use TYPO3\Flow\Http\Response as HttpResponse;
  *
  * @Flow\Scope("singleton")
  */
-class ReadfileStrategy implements FileServeStrategyInterface {
+class ReadfileStrategy implements FileServeStrategyInterface
+{
 
-	/**
-	 * @param string $filePathAndName Absolute path to the file to serve
-	 * @param HttpResponse $httpResponse The current HTTP response (allows setting headers, ...)
-	 * @return void
-	 */
-	public function serve($filePathAndName, HttpResponse $httpResponse) {
-		$httpResponse->sendHeaders();
-		readfile($filePathAndName);
-		exit;
-	}
+    /**
+     * @param string $filePathAndName Absolute path to the file to serve
+     * @param HttpResponse $httpResponse The current HTTP response (allows setting headers, ...)
+     * @return void
+     */
+    public function serve($filePathAndName, HttpResponse $httpResponse)
+    {
+        $httpResponse->sendHeaders();
+        readfile($filePathAndName);
+        exit;
+    }
 
 }
