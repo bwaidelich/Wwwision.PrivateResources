@@ -1,4 +1,4 @@
-TYPO3:
+Neos:
   Flow:
     http:
       chain:
@@ -19,7 +19,7 @@ TYPO3:
         'protectedResourcesTarget':
           target: 'Wwwision\PrivateResources\Resource\Target\ProtectedResourceTarget'
           targetOptions:
-            whitelistRoles: ['TYPO3.Neos:Editor']
+            whitelistRoles: ['Neos.Neos:Editor']
              # time (in seconds) before a token is expired, 0 = no expiration
             tokenLifetime: 0
 

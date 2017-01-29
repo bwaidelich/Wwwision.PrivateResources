@@ -2,25 +2,25 @@
 namespace Wwwision\PrivateResources\Http\Component;
 
 /*                                                                             *
- * This script belongs to the TYPO3 Flow package "Wwwision.PrivateResources".  *
+ * This script belongs to the Neos Flow package "Wwwision.PrivateResources".   *
  *                                                                             */
 
-use TYPO3\Flow\Annotations as Flow;
-use TYPO3\Flow\Exception as FlowException;
-use TYPO3\Flow\Http\Component\ComponentContext;
-use TYPO3\Flow\Http\Component\ComponentInterface;
-use TYPO3\Flow\Http\Request as HttpRequest;
-use TYPO3\Flow\Mvc\ActionRequest;
-use TYPO3\Flow\Object\DependencyInjection\DependencyProxy;
-use TYPO3\Flow\Object\ObjectManagerInterface;
-use TYPO3\Flow\Resource\Resource;
-use TYPO3\Flow\Resource\ResourceManager;
-use TYPO3\Flow\Security\Context;
-use TYPO3\Flow\Security\Cryptography\HashService;
-use TYPO3\Flow\Security\Exception\AccessDeniedException;
-use TYPO3\Flow\Security\Exception\InvalidHashException;
-use TYPO3\Flow\Utility\Files;
-use TYPO3\Flow\Utility\Now;
+use Neos\Flow\Annotations as Flow;
+use Neos\Flow\Exception as FlowException;
+use Neos\Flow\Http\Component\ComponentContext;
+use Neos\Flow\Http\Component\ComponentInterface;
+use Neos\Flow\Http\Request as HttpRequest;
+use Neos\Flow\Mvc\ActionRequest;
+use Neos\Flow\ObjectManagement\DependencyInjection\DependencyProxy;
+use Neos\Flow\ObjectManagement\ObjectManagerInterface;
+use Neos\Flow\ResourceManagement\PersistentResource;
+use Neos\Flow\ResourceManagement\ResourceManager;
+use Neos\Flow\Security\Context;
+use Neos\Flow\Security\Cryptography\HashService;
+use Neos\Flow\Security\Exception\AccessDeniedException;
+use Neos\Flow\Security\Exception\InvalidHashException;
+use Neos\Flow\Utility\Now;
+use Neos\Utility\Files;
 use Wwwision\PrivateResources\Http\Component\Exception\FileNotFoundException;
 use Wwwision\PrivateResources\Http\FileServeStrategy\FileServeStrategyInterface;
 
@@ -68,7 +68,7 @@ class ProtectedResourceComponent implements ComponentInterface
     /**
      * @param array $options
      */
-    public function __construct(array $options = array())
+    public function __construct(array $options = [])
     {
         $this->options = $options;
     }
@@ -101,14 +101,14 @@ class ProtectedResourceComponent implements ComponentInterface
         }
 
         // TODO there should be a better way to determine the absolute path of the resource? Resource::createTemporaryLocalCopy() is too expensive
-        $resourcePathAndFilename = Files::concatenatePaths(array(
+        $resourcePathAndFilename = Files::concatenatePaths([
             $this->options['basePath'],
             $tokenData['resourceIdentifier'][0],
             $tokenData['resourceIdentifier'][1],
             $tokenData['resourceIdentifier'][2],
             $tokenData['resourceIdentifier'][3],
             $tokenData['resourceIdentifier']
-        ));
+        ]);
         if (!is_file($resourcePathAndFilename)) {
             throw new FileNotFoundException(sprintf('File not found!%sThe file "%s" does not exist', chr(10),
                 $resourcePathAndFilename), 1429702284);
@@ -130,7 +130,7 @@ class ProtectedResourceComponent implements ComponentInterface
         $this->emitResourceServed($resource, $httpRequest);
 
         $fileServeStrategy->serve($resourcePathAndFilename, $httpResponse);
-        $componentContext->setParameter('TYPO3\Flow\Http\Component\ComponentChain', 'cancel', true);
+        $componentContext->setParameter('Neos\Flow\Http\Component\ComponentChain', 'cancel', true);
     }
 
     /**
@@ -181,11 +181,11 @@ class ProtectedResourceComponent implements ComponentInterface
      * Signals that all persistAll() has been executed successfully.
      *
      * @Flow\Signal
-     * @param Resource $resource the resource that has been served
+     * @param PersistentResource $resource the resource that has been served
      * @param HttpRequest $httpRequest the current HTTP request
      * @return void
      */
-    protected function emitResourceServed(Resource $resource, HttpRequest $httpRequest)
+    protected function emitResourceServed(PersistentResource $resource, HttpRequest $httpRequest)
     {
     }
 }
