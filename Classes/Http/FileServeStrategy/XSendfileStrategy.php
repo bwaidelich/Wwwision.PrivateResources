@@ -2,20 +2,20 @@
 namespace Wwwision\PrivateResources\Http\FileServeStrategy;
 
 /*                                                                             *
- * This script belongs to the TYPO3 Flow package "Wwwision.PrivateResources".  *
+ * This script belongs to the Neos Flow package "Wwwision.PrivateResources".   *
  *                                                                             */
 
-use TYPO3\Flow\Annotations as Flow;
-use TYPO3\Flow\Http\Response as HttpResponse;
+use Neos\Flow\Annotations as Flow;
+use Neos\Flow\Http\Response as HttpResponse;
 
 /**
- * A file serve strategy that outputs the given file using PHPs readfile function
+ * A file serve strategy that uses the custom "X-Sendfile" header to let Apache servers handle the file download.
  *
- * Note: This mechanism is discouraged for large files because it consumes a lot of memory
+ * Note: This needs the "mod_xsendfile" Apache module to be installed and configured, see https://tn123.org/mod_xsendfile/
  *
  * @Flow\Scope("singleton")
  */
-class ReadfileStrategy implements FileServeStrategyInterface
+class XSendfileStrategy implements FileServeStrategyInterface
 {
 
     /**
@@ -25,9 +25,6 @@ class ReadfileStrategy implements FileServeStrategyInterface
      */
     public function serve($filePathAndName, HttpResponse $httpResponse)
     {
-        $httpResponse->sendHeaders();
-        readfile($filePathAndName);
-        exit;
+        $httpResponse->setHeader('X-Sendfile', $filePathAndName);
     }
-
 }

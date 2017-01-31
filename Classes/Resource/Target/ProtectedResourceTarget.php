@@ -1,22 +1,20 @@
 <?php
 namespace Wwwision\PrivateResources\Resource\Target;
 
-/*                                                                             *
- * This script belongs to the TYPO3 Flow package "Wwwision.PrivateResources".  *
- *                                                                             */
+/*                                                                            *
+ * This script belongs to the Neos Flow package "Wwwision.PrivateResources".  *
+ *                                                                            */
 
-use TYPO3\Flow\Annotations as Flow;
-use TYPO3\Flow\Core\Bootstrap;
-use TYPO3\Flow\Http\HttpRequestHandlerInterface;
-use TYPO3\Flow\Http\Request as HttpRequest;
-use TYPO3\Flow\Resource\Collection;
-use TYPO3\Flow\Resource\CollectionInterface;
-use TYPO3\Flow\Resource\Resource;
-use TYPO3\Flow\Resource\Target\Exception;
-use TYPO3\Flow\Resource\Target\TargetInterface;
-use TYPO3\Flow\Security\Context;
-use TYPO3\Flow\Security\Cryptography\HashService;
-use TYPO3\Flow\Utility\Now;
+use Neos\Flow\Annotations as Flow;
+use Neos\Flow\Core\Bootstrap;
+use Neos\Flow\Http\HttpRequestHandlerInterface;
+use Neos\Flow\ResourceManagement\CollectionInterface;
+use Neos\Flow\ResourceManagement\PersistentResource;
+use Neos\Flow\ResourceManagement\Target\TargetInterface;
+use Neos\Flow\Security\Context;
+use Neos\Flow\Security\Cryptography\HashService;
+use Neos\Flow\Utility\Now;
+use Neos\Flow\Http\Request as HttpRequest;
 
 /**
  * A resource target that does not publish resources directly.
@@ -29,7 +27,7 @@ class ProtectedResourceTarget implements TargetInterface
     /**
      * @var array
      */
-    protected $options = array();
+    protected $options = [];
 
     /**
      * Name which identifies this publishing target
@@ -71,7 +69,7 @@ class ProtectedResourceTarget implements TargetInterface
      * @param string $name Name of this target instance, according to the resource settings
      * @param array $options Options for this target
      */
-    public function __construct($name, array $options = array())
+    public function __construct($name, array $options = [])
     {
         $this->name = $name;
         $this->options = $options;
@@ -97,20 +95,20 @@ class ProtectedResourceTarget implements TargetInterface
     }
 
     /**
-     * @param Resource $resource The resource to publish
+     * @param PersistentResource $resource The resource to publish
      * @param CollectionInterface $collection The collection the given resource belongs to
      * @return void
      */
-    public function publishResource(Resource $resource, CollectionInterface $collection)
+    public function publishResource(PersistentResource $resource, CollectionInterface $collection)
     {
         // publishing is not required for protected resources
     }
 
     /**
-     * @param Resource $resource The resource to unpublish
+     * @param PersistentResource $resource The resource to unpublish
      * @return void
      */
-    public function unpublishResource(Resource $resource)
+    public function unpublishResource(PersistentResource $resource)
     {
         // publishing is not required for protected resources
     }
@@ -129,15 +127,15 @@ class ProtectedResourceTarget implements TargetInterface
     /**
      * Returns the web accessible URI pointing to the specified persistent resource
      *
-     * @param Resource $resource Resource object
+     * @param PersistentResource $resource Resource object
      * @return string The URI
-     * @throws Exception
+     * @throws \Exception
      */
-    public function getPublicPersistentResourceUri(Resource $resource)
+    public function getPublicPersistentResourceUri(PersistentResource $resource)
     {
-        $resourceData = array(
+        $resourceData = [
             'resourceIdentifier' => $resource->getSha1()
-        );
+        ];
         if ($this->shouldIncludeSecurityContext()) {
             $resourceData['securityContextHash'] = $this->securityContext->getContextHash();
         } elseif (!empty($this->options['tokenLifetime'])) {
@@ -196,5 +194,4 @@ class ProtectedResourceTarget implements TargetInterface
         }
         return $this->httpRequest;
     }
-
 }

@@ -1,14 +1,14 @@
 {
     "name": "wwwision/privateresources",
-    "type": "typo3-flow-package",
+    "type": "neos-package",
     "description": "A Flow package that allows for protecting persistent resources from unauthorized access",
     "license": "MIT",
     "require": {
-        "typo3/flow": "~3.0"
+        "neos/flow": "~4.0.0"
     },
     "autoload": {
-        "psr-0": {
-            "Wwwision\\PrivateResources": "Classes"
+        "psr-4": {
+            "Wwwision\\PrivateResources\\": "Classes"
         }
     }
 }

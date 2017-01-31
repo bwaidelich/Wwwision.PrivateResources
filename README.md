@@ -41,7 +41,7 @@ First of all, you'll have to activate the ``ProtectedResourceTarget`` in your ``
 You can either create a new *resource collection*:
 
 ```yaml
-TYPO3:
+Neos:
   Flow:
     resource:
       collections:
@@ -61,7 +61,7 @@ If you want to enable this feature *globally* for persistent resources, just ove
 "persistent" collection:
 
 ```yaml
-TYPO3:
+Neos:
   Flow:
     resource:
       collections:
@@ -77,7 +77,7 @@ this globally, if you really want to protect *all* persistent resources.
 By default a token never expires. You can change that with the ``tokenLifetime`` option:
 
 ```yaml
-TYPO3:
+Neos:
   Flow:
     resource:
       targets:
@@ -98,7 +98,7 @@ option you can disable the token enforcement for individual roles (The token wil
 verified any longer if one of the specified roles is authenticated):
 
 ```yaml
-TYPO3:
+Neos:
   Flow:
     resource:
       targets:
@@ -107,7 +107,7 @@ TYPO3:
             whitelistRoles: ['Your.Package:SomeRole']
 ```
 
-By default, the ``TYPO3.Neos:Editor`` role is whitelisted, so that this package can be used within Neos CMS without
+By default, the ``Neos.Neos:Editor`` role is whitelisted, so that this package can be used within Neos CMS without
 caching issues.
 
 ### HTTP Component ###
@@ -133,7 +133,7 @@ Assuming you have the Apache module installed and configured to access files wit
 directory of your installation, you can activate the ``XSendfileStrategy`` with the following settings:
 
 ```yaml
-TYPO3:
+Neos:
   Flow:
     http:
       chain:
@@ -155,7 +155,7 @@ Similar to the ``X-Sendfile`` mechanism, the ``X-Accel-Redirect`` allows for int
 It can be activated with:
 
 ```yaml
-TYPO3:
+Neos:
   Flow:
     http:
       chain:
