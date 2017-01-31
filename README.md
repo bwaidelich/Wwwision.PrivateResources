@@ -28,7 +28,7 @@ Conclusion: This package is only useful in very rare cases ;)
 How-To:
 -------
 
-* Install the package to ``Packages/Application/Wwwision.PrivateResources`` (e.g. via ``composer require wwwision/privateresources:dev-master``)
+* Install the package to ``Packages/Application/Wwwision.PrivateResources`` (e.g. via ``composer require wwwision/privateresources``)
 * Configure it (see below)
 * Done
 
@@ -185,7 +185,7 @@ You can use that signal to count file downloads for example:
  */
 public function boot(Bootstrap $bootstrap) {
 	$dispatcher = $bootstrap->getSignalSlotDispatcher();
-	$dispatcher->connect('Wwwision\PrivateResources\Http\Component\ProtectedResourceComponent', 'resourceServed', function(Resource $resource, HttpRequest $httpRequest) {
+	$dispatcher->connect(ProtectedResourceComponent::class, 'resourceServed', function(Resource $resource, HttpRequest $httpRequest) {
 		// increase counter for the given $resource
 	});
 }
