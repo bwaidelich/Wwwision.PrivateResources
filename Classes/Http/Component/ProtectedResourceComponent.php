@@ -172,6 +172,7 @@ class ProtectedResourceComponent implements ComponentInterface
         $actionRequest = $this->objectManager->get(ActionRequest::class, $httpRequest);
         $this->securityContext->setRequest($actionRequest);
         if ($tokenData['securityContextHash'] !== $this->securityContext->getContextHash()) {
+            $this->emitInvalidSecurityContextHash($tokenData, $httpRequest);
             throw new AccessDeniedException(sprintf('Invalid security hash!%sThis request is signed for a security context hash of "%s", but the current hash is "%s"',
                 chr(10), $tokenData['securityContextHash'], $this->securityContext->getContextHash()), 1429705633);
         }
@@ -188,4 +189,16 @@ class ProtectedResourceComponent implements ComponentInterface
     protected function emitResourceServed(PersistentResource $resource, HttpRequest $httpRequest)
     {
     }
+
+    /**
+     * Signals that the security context hash verification failed
+     *
+     * @Flow\Signal
+     * @param array $tokenData the token data
+     * @param HttpRequest $httpRequest the current HTTP request
+     * @return void
+     */
+     protected function emitInvalidSecurityContextHash(array $tokenData, HttpRequest $httpRequest)
+     {
+     }
 }
