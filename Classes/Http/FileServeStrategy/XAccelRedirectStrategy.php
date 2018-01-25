@@ -11,7 +11,8 @@ use Neos\Flow\Http\Response as HttpResponse;
 /**
  * A file serve strategy that uses the custom "X-accel-Redirect" header to let Nginx servers handle the file download.
  *
- * Note: This requires a properly configured Nginx server, see http://wiki.nginx.org/X-accel
+ * Note: This requires a properly configured nginx server,
+ * see https://www.nginx.com/resources/wiki/start/topics/examples/x-accel/
  *
  * @Flow\Scope("singleton")
  */
