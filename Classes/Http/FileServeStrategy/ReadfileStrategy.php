@@ -11,8 +11,6 @@ use Neos\Flow\Http\Response as HttpResponse;
 /**
  * A file serve strategy that outputs the given file using PHPs readfile function
  *
- * Note: This mechanism is discouraged for large files because it consumes a lot of memory
- *
  * @Flow\Scope("singleton")
  */
 class ReadfileStrategy implements FileServeStrategyInterface
@@ -26,6 +24,11 @@ class ReadfileStrategy implements FileServeStrategyInterface
     public function serve($filePathAndName, HttpResponse $httpResponse)
     {
         $httpResponse->sendHeaders();
+        // Ensure no output buffer is used so the file contents won't be loaded into the RAM
+        // BTW: This does not work with xdebug enabled! (any output will be buffered by xdebug)
+        while (ob_get_level() > 0) {
+            ob_end_flush();
+        }
         readfile($filePathAndName);
         exit;
     }
