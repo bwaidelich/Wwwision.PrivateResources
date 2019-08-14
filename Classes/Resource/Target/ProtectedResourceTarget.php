@@ -66,6 +66,12 @@ class ProtectedResourceTarget implements TargetInterface
     protected $httpRequest;
 
     /**
+     * @Flow\InjectConfiguration(package="Neos.Flow", path="http.baseUri")
+     * @var string
+     */
+    protected $defaultBaseUri;
+
+    /**
      * @param string $name Name of this target instance, according to the resource settings
      * @param array $options Options for this target
      */
@@ -171,12 +177,11 @@ class ProtectedResourceTarget implements TargetInterface
      */
     protected function detectResourcesBaseUri()
     {
-        $uri = '';
         $request = $this->getHttpRequest();
-        if ($request instanceof HttpRequest) {
-            $uri = $request->getBaseUri();
+        if (!$request instanceof HttpRequest) {
+            return $this->defaultBaseUri;
         }
-        return (string)$uri;
+        return (string)$request->getBaseUri();
     }
 
     /**
