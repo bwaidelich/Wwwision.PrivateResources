@@ -82,7 +82,7 @@ class ProtectedResourceTarget implements TargetInterface
      */
     public function getName()
     {
-        return $this->getName();
+        return $this->name;
     }
 
     /**
