@@ -23,6 +23,7 @@ use Neos\Flow\Utility\Now;
 use Neos\Utility\Files;
 use Wwwision\PrivateResources\Http\Component\Exception\FileNotFoundException;
 use Wwwision\PrivateResources\Http\FileServeStrategy\FileServeStrategyInterface;
+use Neos\Flow\Http\Component\ComponentChain;
 
 /**
  * A HTTP Component that checks for the request argument "__protectedResource" and outputs the requested resource if the client tokens match
@@ -80,6 +81,7 @@ class ProtectedResourceComponent implements ComponentInterface
      */
     public function handle(ComponentContext $componentContext)
     {
+        /** @var HttpRequest $httpRequest */
         $httpRequest = $componentContext->getHttpRequest();
         if (!$httpRequest->hasArgument('__protectedResource')) {
             return;
@@ -130,7 +132,7 @@ class ProtectedResourceComponent implements ComponentInterface
         $this->emitResourceServed($resource, $httpRequest);
 
         $fileServeStrategy->serve($resourcePathAndFilename, $httpResponse);
-        $componentContext->setParameter('Neos\Flow\Http\Component\ComponentChain', 'cancel', true);
+        $componentContext->setParameter(ComponentChain::class, 'cancel', true);
     }
 
     /**
@@ -168,8 +170,7 @@ class ProtectedResourceComponent implements ComponentInterface
         if (!isset($tokenData['securityContextHash'])) {
             return;
         }
-        /** @var $actionRequest ActionRequest */
-        $actionRequest = $this->objectManager->get(ActionRequest::class, $httpRequest);
+        $actionRequest = new ActionRequest($httpRequest);
         $this->securityContext->setRequest($actionRequest);
         if ($tokenData['securityContextHash'] !== $this->securityContext->getContextHash()) {
             $this->emitInvalidSecurityContextHash($tokenData, $httpRequest);
