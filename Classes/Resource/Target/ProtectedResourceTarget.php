@@ -140,9 +140,8 @@ class ProtectedResourceTarget implements TargetInterface
             $resourceData['securityContextHash'] = $this->securityContext->getContextHash();
         } elseif (!empty($this->options['tokenLifetime'])) {
             $expirationDateTime = clone $this->now;
-            $expirationDateTime = $expirationDateTime->modify(sprintf('+%d seconds',
-                $this->options['tokenLifetime']));
-            $resourceData['expirationDateTime'] = $expirationDateTime->format(\DateTime::ISO8601);
+            $expirationDateTime = $expirationDateTime->modify(sprintf('+%d seconds', $this->options['tokenLifetime']));
+            $resourceData['expirationDateTime'] = $expirationDateTime->format(\DateTime::ATOM);
         }
         $encodedResourceData = base64_encode(json_encode($resourceData));
         $signedResourceData = $this->hashService->appendHmac($encodedResourceData);

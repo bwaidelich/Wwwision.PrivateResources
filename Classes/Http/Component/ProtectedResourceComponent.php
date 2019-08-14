@@ -145,13 +145,13 @@ class ProtectedResourceComponent implements ComponentInterface
         if (!isset($tokenData['expirationDateTime'])) {
             return;
         }
-        $expirationDateTime = \DateTime::createFromFormat(\DateTime::ISO8601, $tokenData['expirationDateTime']);
+        $expirationDateTime = \DateTime::createFromFormat(\DateTime::ATOM, $tokenData['expirationDateTime']);
         if ($this->now instanceof DependencyProxy) {
             $this->now->_activateDependency();
         }
         if ($expirationDateTime < $this->now) {
             throw new AccessDeniedException(sprintf('Token expired!%sThis token expired at "%s"', chr(10),
-                $expirationDateTime->format(\DateTime::ISO8601)), 1429697439);
+                $expirationDateTime->format(\DateTime::ATOM)), 1429697439);
         }
     }
 
