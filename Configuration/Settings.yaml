@@ -19,7 +19,12 @@ Neos:
         'protectedResourcesTarget':
           target: 'Wwwision\PrivateResources\Resource\Target\ProtectedResourceTarget'
           targetOptions:
+             # The security context hash is not included in the token if the authenticated account has one of the specified roles (ignored if "privilegedRole" is set)
             whitelistRoles: ['Neos.Neos:Editor']
+
+             # If set the token is assigned to the given role. Only accounts with the given role can access the resource
+            #privilegedRole: 'Some.Package:RoleIdentifier'
+
              # time (in seconds) before a token is expired, 0 = no expiration
             tokenLifetime: 0
 

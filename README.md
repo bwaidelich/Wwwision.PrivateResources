@@ -32,6 +32,14 @@ How-To:
 * Configure it (see below)
 * Done
 
+Concept:
+--------
+
+This package provides a custom [Resource Publishing Target](https://flowframework.readthedocs.io/en/stable/TheDefinitiveGuide/PartIII/ResourceManagement.html#target)
+that prevents resources from being published to the accessible file system. Instead it generates a token link that, when requested, invokes a
+[HTTP Component](https://flowframework.readthedocs.io/en/stable/TheDefinitiveGuide/PartIII/Http.html#component-chain) that in turn serves the
+corresponding resource if the current user is allowed to access it.
+
 Configuration:
 --------------
 
@@ -74,7 +82,8 @@ this globally, if you really want to protect *all* persistent resources.
 
 #### Token Lifetime ####
 
-By default a token never expires. You can change that with the ``tokenLifetime`` option:
+By default a token never expires.
+You can change that with the ``tokenLifetime`` option:
 
 ```yaml
 Neos:
@@ -87,6 +96,8 @@ Neos:
 ```
 
 With this configuration, tokens will expire after 86400 seconds (= one day).
+
+**NOTE:** This option is only considered for "whitelisted" tokens that are not bound to a role or security context hash 
 
 **NOTE:** If the publishing of the resource is cached, this might lead to broken resources (e.g. if you use this within
 Neos CMS within a Node Type with a cache lifetime larger than the tokenLifetime).
@@ -109,6 +120,26 @@ Neos:
 
 By default, the ``Neos.Neos:Editor`` role is whitelisted, so that this package can be used within Neos CMS without
 caching issues.
+
+#### Privileged Role ####
+
+If no whitelisted role is active (see above) the token is bound to the Flow Security Context. That means that only
+requests that have the same Security Context Hash are privileged to access the resource.
+The Security Context Hash is bound to the currently authenticated roles and the [Global AOP Objects](https://flowframework.readthedocs.io/en/stable/TheDefinitiveGuide/PartIII/Security.html#content-security-entityprivilege).
+
+Alternatively a role can be configured that should always have access to all resources of a given Resource Target:
+
+```yaml
+Neos:
+  Flow:
+    resource:
+      targets:
+        'protectedResourcesTarget':
+          targetOptions:
+            privilegedRole: 'Your.Package:SomeRole'
+```
+
+**NOTE:** With this option it's allowed to create the resource URLs asynchronous and/or via CLI because it doesn't require an initialized Security Context
 
 ### HTTP Component ###
 
@@ -190,6 +221,14 @@ public function boot(Bootstrap $bootstrap) {
 	});
 }
 ```
+
+The following signals are emitted:
+
+* `ProtectedResourceComponent:resourceServed(PersistentResource $resource, HttpRequest $httpRequest)` whenever a private resource is served
+* `ProtectedResourceComponent:accessDenied(array $tokenData, HttpRequest $httpRequest)`
+
+The following signal is still emitted for backwards compatibility, but is deprecated in favor of `accessDenied`:
+* `ProtectedResourceComponent:invalidSecurityContextHash(array $tokenData, HttpRequest $httpRequest)`
 
 Known issues and limitations
 ----------------------------

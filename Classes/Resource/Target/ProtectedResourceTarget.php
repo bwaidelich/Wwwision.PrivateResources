@@ -142,7 +142,9 @@ class ProtectedResourceTarget implements TargetInterface
         $resourceData = [
             'resourceIdentifier' => $resource->getSha1()
         ];
-        if ($this->shouldIncludeSecurityContext()) {
+        if (isset($this->options['privilegedRole'])) {
+            $resourceData['privilegedRole'] = $this->options['privilegedRole'];
+        } elseif ($this->shouldIncludeSecurityContext()) {
             $resourceData['securityContextHash'] = $this->securityContext->getContextHash();
         } elseif (!empty($this->options['tokenLifetime'])) {
             $expirationDateTime = clone $this->now;
