@@ -7,6 +7,7 @@ namespace Wwwision\PrivateResources\Http\Component;
 
 use TYPO3\Flow\Annotations as Flow;
 use TYPO3\Flow\Exception as FlowException;
+use TYPO3\Flow\Http\Component\ComponentChain;
 use TYPO3\Flow\Http\Component\ComponentContext;
 use TYPO3\Flow\Http\Component\ComponentInterface;
 use TYPO3\Flow\Http\Request as HttpRequest;
@@ -19,6 +20,7 @@ use TYPO3\Flow\Security\Context;
 use TYPO3\Flow\Security\Cryptography\HashService;
 use TYPO3\Flow\Security\Exception\AccessDeniedException;
 use TYPO3\Flow\Security\Exception\InvalidHashException;
+use TYPO3\Flow\Security\Policy\Role;
 use TYPO3\Flow\Utility\Files;
 use TYPO3\Flow\Utility\Now;
 use Wwwision\PrivateResources\Http\Component\Exception\FileNotFoundException;
@@ -68,7 +70,7 @@ class ProtectedResourceComponent implements ComponentInterface
     /**
      * @param array $options
      */
-    public function __construct(array $options = array())
+    public function __construct(array $options = [])
     {
         $this->options = $options;
     }
@@ -80,6 +82,7 @@ class ProtectedResourceComponent implements ComponentInterface
      */
     public function handle(ComponentContext $componentContext)
     {
+        /** @var HttpRequest $httpRequest */
         $httpRequest = $componentContext->getHttpRequest();
         if (!$httpRequest->hasArgument('__protectedResource')) {
             return;
@@ -91,8 +94,8 @@ class ProtectedResourceComponent implements ComponentInterface
         }
         $tokenData = json_decode(base64_decode($encodedResourceData), true);
 
-        $this->verifyExpiration($tokenData);
-        $this->verifySecurityContextHash($tokenData, $httpRequest);
+        $this->verifyExpiration($tokenData, $httpRequest);
+        $this->verifySecurityContext($tokenData, $httpRequest);
 
         $resource = $this->resourceManager->getResourceBySha1($tokenData['resourceIdentifier']);
         if ($resource === null) {
@@ -101,14 +104,14 @@ class ProtectedResourceComponent implements ComponentInterface
         }
 
         // TODO there should be a better way to determine the absolute path of the resource? Resource::createTemporaryLocalCopy() is too expensive
-        $resourcePathAndFilename = Files::concatenatePaths(array(
+        $resourcePathAndFilename = Files::concatenatePaths([
             $this->options['basePath'],
             $tokenData['resourceIdentifier'][0],
             $tokenData['resourceIdentifier'][1],
             $tokenData['resourceIdentifier'][2],
             $tokenData['resourceIdentifier'][3],
             $tokenData['resourceIdentifier']
-        ));
+        ]);
         if (!is_file($resourcePathAndFilename)) {
             throw new FileNotFoundException(sprintf('File not found!%sThe file "%s" does not exist', chr(10),
                 $resourcePathAndFilename), 1429702284);
@@ -130,50 +133,60 @@ class ProtectedResourceComponent implements ComponentInterface
         $this->emitResourceServed($resource, $httpRequest);
 
         $fileServeStrategy->serve($resourcePathAndFilename, $httpResponse);
-        $componentContext->setParameter('TYPO3\Flow\Http\Component\ComponentChain', 'cancel', true);
+        $componentContext->setParameter(ComponentChain::class, 'cancel', true);
     }
 
     /**
      * Checks whether the token is expired
      *
      * @param array $tokenData
+     * @param HttpRequest $httpRequest
      * @return void
      * @throws AccessDeniedException
      */
-    protected function verifyExpiration(array $tokenData)
+    protected function verifyExpiration(array $tokenData, HttpRequest $httpRequest)
     {
         if (!isset($tokenData['expirationDateTime'])) {
             return;
         }
-        $expirationDateTime = \DateTime::createFromFormat(\DateTime::ISO8601, $tokenData['expirationDateTime']);
+        $expirationDateTime = \DateTime::createFromFormat(\DateTime::ATOM, $tokenData['expirationDateTime']);
         if ($this->now instanceof DependencyProxy) {
             $this->now->_activateDependency();
         }
         if ($expirationDateTime < $this->now) {
-            throw new AccessDeniedException(sprintf('Token expired!%sThis token expired at "%s"', chr(10),
-                $expirationDateTime->format(\DateTime::ISO8601)), 1429697439);
+            $this->emitAccessDenied($tokenData, $httpRequest);
+            throw new AccessDeniedException(sprintf('Token expired!%sThis token expired at "%s"', chr(10), $expirationDateTime->format(\DateTime::ATOM)), 1429697439);
         }
     }
 
     /**
-     * Checks whether the current request has the same security context hash as the one of the token
+     * Checks whether the currently authenticated user is allowed to access the resource
      *
      * @param array $tokenData
      * @param HttpRequest $httpRequest
      * @return void
      * @throws AccessDeniedException
      */
-    protected function verifySecurityContextHash(array $tokenData, HttpRequest $httpRequest)
+    protected function verifySecurityContext(array $tokenData, HttpRequest $httpRequest)
     {
-        if (!isset($tokenData['securityContextHash'])) {
+        if (!isset($tokenData['securityContextHash']) && !isset($tokenData['privilegedRole'])) {
             return;
         }
-        /** @var $actionRequest ActionRequest */
-        $actionRequest = $this->objectManager->get(ActionRequest::class, $httpRequest);
+        $actionRequest = new ActionRequest($httpRequest);
         $this->securityContext->setRequest($actionRequest);
+        if (isset($tokenData['privilegedRole'])) {
+            if ($this->securityContext->hasRole($tokenData['privilegedRole'])) {
+                return;
+            }
+            $authenticatedRoleIdentifiers = array_map(static function(Role $role) { return $role->getIdentifier(); }, $this->securityContext->getRoles());
+            $this->emitAccessDenied($tokenData, $httpRequest);
+            throw new AccessDeniedException(sprintf('Access denied!%sThis request is signed for a role "%s", but only the following roles are authenticated: %s', chr(10), $tokenData['privilegedRole'], implode(', ', $authenticatedRoleIdentifiers)), 1565856716);
+        }
+
         if ($tokenData['securityContextHash'] !== $this->securityContext->getContextHash()) {
-            throw new AccessDeniedException(sprintf('Invalid security hash!%sThis request is signed for a security context hash of "%s", but the current hash is "%s"',
-                chr(10), $tokenData['securityContextHash'], $this->securityContext->getContextHash()), 1429705633);
+            $this->emitAccessDenied($tokenData, $httpRequest);
+            $this->emitInvalidSecurityContextHash($tokenData, $httpRequest);
+            throw new AccessDeniedException(sprintf('Invalid security hash!%sThis request is signed for a security context hash of "%s", but the current hash is "%s"', chr(10), $tokenData['securityContextHash'], $this->securityContext->getContextHash()), 1429705633);
         }
     }
 
@@ -186,6 +199,31 @@ class ProtectedResourceComponent implements ComponentInterface
      * @return void
      */
     protected function emitResourceServed(Resource $resource, HttpRequest $httpRequest)
+    {
+    }
+
+    /**
+     * Signals that the token verification failed
+     *
+     * @Flow\Signal
+     * @param array $tokenData the token data
+     * @param HttpRequest $httpRequest the current HTTP request
+     * @return void
+     */
+    protected function emitAccessDenied(array $tokenData, HttpRequest $httpRequest)
+    {
+    }
+
+    /**
+     * Signals that the security context hash verification failed
+     *
+     * @Flow\Signal
+     * @deprecated use "accessDenied" signal instead
+     * @param array $tokenData the token data
+     * @param HttpRequest $httpRequest the current HTTP request
+     * @return void
+     */
+    protected function emitInvalidSecurityContextHash(array $tokenData, HttpRequest $httpRequest)
     {
     }
 }

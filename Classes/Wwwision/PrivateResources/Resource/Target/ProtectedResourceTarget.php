@@ -9,10 +9,8 @@ use TYPO3\Flow\Annotations as Flow;
 use TYPO3\Flow\Core\Bootstrap;
 use TYPO3\Flow\Http\HttpRequestHandlerInterface;
 use TYPO3\Flow\Http\Request as HttpRequest;
-use TYPO3\Flow\Resource\Collection;
 use TYPO3\Flow\Resource\CollectionInterface;
 use TYPO3\Flow\Resource\Resource;
-use TYPO3\Flow\Resource\Target\Exception;
 use TYPO3\Flow\Resource\Target\TargetInterface;
 use TYPO3\Flow\Security\Context;
 use TYPO3\Flow\Security\Cryptography\HashService;
@@ -29,7 +27,7 @@ class ProtectedResourceTarget implements TargetInterface
     /**
      * @var array
      */
-    protected $options = array();
+    protected $options = [];
 
     /**
      * Name which identifies this publishing target
@@ -68,10 +66,16 @@ class ProtectedResourceTarget implements TargetInterface
     protected $httpRequest;
 
     /**
+     * @Flow\InjectConfiguration(package="TYPO3.Flow", path="http.baseUri")
+     * @var string
+     */
+    protected $defaultBaseUri;
+
+    /**
      * @param string $name Name of this target instance, according to the resource settings
      * @param array $options Options for this target
      */
-    public function __construct($name, array $options = array())
+    public function __construct($name, array $options = [])
     {
         $this->name = $name;
         $this->options = $options;
@@ -84,7 +88,7 @@ class ProtectedResourceTarget implements TargetInterface
      */
     public function getName()
     {
-        return $this->getName();
+        return $this->name;
     }
 
     /**
@@ -131,20 +135,21 @@ class ProtectedResourceTarget implements TargetInterface
      *
      * @param Resource $resource Resource object
      * @return string The URI
-     * @throws Exception
+     * @throws \Exception
      */
     public function getPublicPersistentResourceUri(Resource $resource)
     {
-        $resourceData = array(
+        $resourceData = [
             'resourceIdentifier' => $resource->getSha1()
-        );
-        if ($this->shouldIncludeSecurityContext()) {
+        ];
+        if (isset($this->options['privilegedRole'])) {
+            $resourceData['privilegedRole'] = $this->options['privilegedRole'];
+        } elseif ($this->shouldIncludeSecurityContext()) {
             $resourceData['securityContextHash'] = $this->securityContext->getContextHash();
         } elseif (!empty($this->options['tokenLifetime'])) {
             $expirationDateTime = clone $this->now;
-            $expirationDateTime = $expirationDateTime->modify(sprintf('+%d seconds',
-                $this->options['tokenLifetime']));
-            $resourceData['expirationDateTime'] = $expirationDateTime->format(\DateTime::ISO8601);
+            $expirationDateTime = $expirationDateTime->modify(sprintf('+%d seconds', $this->options['tokenLifetime']));
+            $resourceData['expirationDateTime'] = $expirationDateTime->format(\DateTime::ATOM);
         }
         $encodedResourceData = base64_encode(json_encode($resourceData));
         $signedResourceData = $this->hashService->appendHmac($encodedResourceData);
@@ -174,12 +179,11 @@ class ProtectedResourceTarget implements TargetInterface
      */
     protected function detectResourcesBaseUri()
     {
-        $uri = '';
         $request = $this->getHttpRequest();
-        if ($request instanceof HttpRequest) {
-            $uri = $request->getBaseUri();
+        if (!$request instanceof HttpRequest) {
+            return $this->defaultBaseUri;
         }
-        return (string)$uri;
+        return (string)$request->getBaseUri();
     }
 
     /**
@@ -196,5 +200,4 @@ class ProtectedResourceTarget implements TargetInterface
         }
         return $this->httpRequest;
     }
-
 }
