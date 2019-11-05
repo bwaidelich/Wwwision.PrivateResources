@@ -6,7 +6,7 @@ namespace Wwwision\PrivateResources\Http\FileServeStrategy;
  *                                                                             */
 
 use Neos\Flow\Annotations as Flow;
-use Neos\Flow\Http\Response as HttpResponse;
+use Psr\Http\Message\ResponseInterface as HttpResponseInterface;
 
 /**
  * A file serve strategy that uses the custom "X-accel-Redirect" header to let Nginx servers handle the file download.
@@ -21,11 +21,11 @@ class XAccelRedirectStrategy implements FileServeStrategyInterface
 
     /**
      * @param string $filePathAndName Absolute path to the file to serve
-     * @param HttpResponse $httpResponse The current HTTP response (allows setting headers, ...)
+     * @param HttpResponseInterface $httpResponse The current HTTP response (allows setting headers, ...)
      * @return void
      */
-    public function serve($filePathAndName, HttpResponse $httpResponse)
+    public function serve($filePathAndName, HttpResponseInterface $httpResponse)
     {
-        $httpResponse->setHeader('X-Accel-Redirect', $filePathAndName);
+        $httpResponse->withHeader('X-Accel-Redirect', $filePathAndName);
     }
 }

@@ -14,7 +14,7 @@ use Neos\Flow\ResourceManagement\Target\TargetInterface;
 use Neos\Flow\Security\Context;
 use Neos\Flow\Security\Cryptography\HashService;
 use Neos\Flow\Utility\Now;
-use Neos\Flow\Http\Request as HttpRequest;
+use Psr\Http\Message\ServerRequestInterface as HttpRequestInterface;
 
 /**
  * A resource target that does not publish resources directly.
@@ -61,7 +61,7 @@ class ProtectedResourceTarget implements TargetInterface
     protected $now;
 
     /**
-     * @var HttpRequest
+     * @var HttpRequestInterface
      */
     protected $httpRequest;
 
@@ -180,14 +180,14 @@ class ProtectedResourceTarget implements TargetInterface
     protected function detectResourcesBaseUri()
     {
         $request = $this->getHttpRequest();
-        if (!$request instanceof HttpRequest) {
+        if (!$request instanceof HttpRequestInterface) {
             return $this->defaultBaseUri;
         }
-        return (string)$request->getBaseUri();
+        return (string)$request->getUri();
     }
 
     /**
-     * @return HttpRequest
+     * @return HttpRequestInterface
      */
     protected function getHttpRequest()
     {
