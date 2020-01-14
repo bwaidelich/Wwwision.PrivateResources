@@ -17,7 +17,7 @@ interface FileServeStrategyInterface
     /**
      * @param string $filePathAndName Absolute path to the file to serve
      * @param ResponseInterface $httpResponse The current HTTP response (allows setting headers, ...)
-     * @return void
+     * @return ResponseInterface
      */
-    public function serve($filePathAndName, ResponseInterface $httpResponse);
+    public function serve($filePathAndName, ResponseInterface $httpResponse): ResponseInterface;
 }

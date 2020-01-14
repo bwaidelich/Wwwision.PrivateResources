@@ -22,10 +22,12 @@ class XAccelRedirectStrategy implements FileServeStrategyInterface
     /**
      * @param string $filePathAndName Absolute path to the file to serve
      * @param HttpResponseInterface $httpResponse The current HTTP response (allows setting headers, ...)
-     * @return void
+     * @return HttpResponseInterface
      */
-    public function serve($filePathAndName, HttpResponseInterface $httpResponse)
+    public function serve($filePathAndName, HttpResponseInterface $httpResponse): HttpResponseInterface
     {
-        $httpResponse->withHeader('X-Accel-Redirect', $filePathAndName);
+        /** @var HttpResponseInterface $response */
+        $response = $httpResponse->withHeader('X-Accel-Redirect', $filePathAndName);
+        return $response;
     }
 }

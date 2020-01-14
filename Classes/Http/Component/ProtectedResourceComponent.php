@@ -129,14 +129,15 @@ class ProtectedResourceComponent implements ComponentInterface
                 get_class($fileServeStrategy)), 1429704284);
         }
         /** @var ResponseInterface $httpResponse */
-        $httpResponse = $componentContext->getHttpResponse();
-        $httpResponse->withHeader('Content-Type', $resource->getMediaType());
-        $httpResponse->withHeader('Content-Disposition', 'attachment;filename="' . $resource->getFilename() . '"');
-        $httpResponse->withHeader('Content-Length', $resource->getFileSize());
+        $httpResponse = $componentContext->getHttpResponse()
+            ->withHeader('Content-Type', $resource->getMediaType())
+            ->withHeader('Content-Disposition', 'attachment;filename="' . $resource->getFilename() . '"')
+            ->withHeader('Content-Length', $resource->getFileSize());
 
         $this->emitResourceServed($resource, $httpRequest);
 
-        $fileServeStrategy->serve($resourcePathAndFilename, $httpResponse);
+        $httpResponse = $fileServeStrategy->serve($resourcePathAndFilename, $httpResponse);
+        $componentContext->replaceHttpResponse($httpResponse);
         $componentContext->setParameter(ComponentChain::class, 'cancel', true);
     }
 
