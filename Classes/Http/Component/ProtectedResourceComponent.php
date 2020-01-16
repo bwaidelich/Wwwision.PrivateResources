@@ -87,11 +87,13 @@ class ProtectedResourceComponent implements ComponentInterface
     {
         /** @var HttpRequestInterface $httpRequest */
         $httpRequest = $componentContext->getHttpRequest();
-        if ($httpRequest->getAttribute('__protectedResource') !== null || $httpRequest->getAttribute('__protectedResource') !== '' || $httpRequest->getAttribute('__protectedResource') === false) {
+        $queryParams = $httpRequest->getQueryParams();
+
+        if (!array_key_exists('__protectedResource', $queryParams) || $queryParams['__protectedResource'] === '' || $queryParams['__protectedResource'] === false) {
             return;
         }
         try {
-            $encodedResourceData = $this->hashService->validateAndStripHmac($httpRequest->getAttribute('__protectedResource'));
+            $encodedResourceData = $this->hashService->validateAndStripHmac($queryParams['__protectedResource']);
         } catch (InvalidHashException $exception) {
             throw new AccessDeniedException('Invalid HMAC!', 1421241393, $exception);
         }

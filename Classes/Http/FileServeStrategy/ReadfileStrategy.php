@@ -25,7 +25,7 @@ class ReadfileStrategy implements FileServeStrategyInterface
     public function serve($filePathAndName, HttpResponseInterface $httpResponse): HttpResponseInterface
     {
         /** @var HttpResponseInterface $response */
-        $response = $httpResponse->withBody(stream_for($filePathAndName));
+        $response = $httpResponse->withBody(stream_for(fopen($filePathAndName, 'rb')));
         return $response;
     }
 }
