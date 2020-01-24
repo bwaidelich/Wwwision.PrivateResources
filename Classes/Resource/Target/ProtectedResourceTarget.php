@@ -7,6 +7,7 @@ namespace Wwwision\PrivateResources\Resource\Target;
 
 use Neos\Flow\Annotations as Flow;
 use Neos\Flow\Core\Bootstrap;
+use Neos\Flow\Http\Helper\RequestInformationHelper;
 use Neos\Flow\Http\HttpRequestHandlerInterface;
 use Neos\Flow\ResourceManagement\CollectionInterface;
 use Neos\Flow\ResourceManagement\PersistentResource;
@@ -14,7 +15,7 @@ use Neos\Flow\ResourceManagement\Target\TargetInterface;
 use Neos\Flow\Security\Context;
 use Neos\Flow\Security\Cryptography\HashService;
 use Neos\Flow\Utility\Now;
-use Neos\Flow\Http\Request as HttpRequest;
+use Psr\Http\Message\ServerRequestInterface as HttpRequestInterface;
 
 /**
  * A resource target that does not publish resources directly.
@@ -61,7 +62,7 @@ class ProtectedResourceTarget implements TargetInterface
     protected $now;
 
     /**
-     * @var HttpRequest
+     * @var HttpRequestInterface
      */
     protected $httpRequest;
 
@@ -157,9 +158,11 @@ class ProtectedResourceTarget implements TargetInterface
     }
 
     /**
-     * @return boolean
+     * @return bool
+     * @throws \Neos\Flow\Security\Exception
+     * @throws \Neos\Flow\Security\Exception\NoSuchRoleException
      */
-    protected function shouldIncludeSecurityContext()
+    protected function shouldIncludeSecurityContext(): bool
     {
         if (!isset($this->options['whitelistRoles'])) {
             return true;
@@ -177,26 +180,26 @@ class ProtectedResourceTarget implements TargetInterface
      *
      * @return string The website's base URI
      */
-    protected function detectResourcesBaseUri()
+    protected function detectResourcesBaseUri(): string
     {
         $request = $this->getHttpRequest();
-        if (!$request instanceof HttpRequest) {
+        if (!$request instanceof HttpRequestInterface) {
             return $this->defaultBaseUri;
         }
-        return (string)$request->getBaseUri();
+        return (string)RequestInformationHelper::generateBaseUri($request);
     }
 
     /**
-     * @return HttpRequest
+     * @return HttpRequestInterface|null
      */
-    protected function getHttpRequest()
+    protected function getHttpRequest(): ?HttpRequestInterface
     {
         if ($this->httpRequest === null) {
             $requestHandler = $this->bootstrap->getActiveRequestHandler();
             if (!$requestHandler instanceof HttpRequestHandlerInterface) {
                 return null;
             }
-            $this->httpRequest = $requestHandler->getHttpRequest();
+            $this->httpRequest = $requestHandler-> getComponentContext()->getHttpRequest();
         }
         return $this->httpRequest;
     }
