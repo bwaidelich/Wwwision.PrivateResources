@@ -25,6 +25,18 @@ roles. However, resources will still be downloaded obviously and users can share
 Furthermore serving private resources consumes more time and memory because every hit triggers a PHP request.
 Conclusion: This package is only useful in very rare cases ;) 
 
+Version:
+--------
+
+The table below provides an overview of the available versions.
+
+Note: The releases version 3.4.0 is not compatible with Flow < 6.
+
+| Branch / Release   | Supported Flow version |
+| ------------------ | ---------------------- |
+| 3.x, 4.x           | 4.1, 5.x               |
+| 3.4, 5.x, master   | 6.x                    |
+
 How-To:
 -------
 
