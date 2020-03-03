@@ -25,6 +25,18 @@ roles. However, resources will still be downloaded obviously and users can share
 Furthermore serving private resources consumes more time and memory because every hit triggers a PHP request.
 Conclusion: This package is only useful in very rare cases ;) 
 
+Version:
+--------
+
+The table below provides an overview of the available versions.
+
+Note: The releases version 3.4.0 is not compatible with Flow < 6.
+
+| Branch / Release   | Supported Flow version |
+| ------------------ | ---------------------- |
+| 3.x, 4.x           | 4.1, 5.x               |
+| 3.4, 5.x, master   | 6.x                    |
+
 How-To:
 -------
 
@@ -148,9 +160,11 @@ routing kicks in.
 This ``ProtectedResourceComponent`` is already configured and if it comes across an HTTP requests with an
 "__protectedResource" argument it will validate the hash and output the requested file, if valid.
 
-By default it uses PHPs ``readfile()`` function to stream the file from its inaccessible location to the client, but
+By default it uses PHPs ``readfile()`` function to stream a local file from its inaccessible location to the client, but
 this has some drawbacks because it has to pipe the whole file through the PHP process consuming a lot of memory,
 especially for larger files.
+
+To support external cloud storage use the `StreamStrategy` described further below.
 
 To improve performance and memory footprint you can therefore configure the component to use different strategies to
 serve the file:
@@ -195,6 +209,26 @@ Neos:
             'protectedResources':
               componentOptions:
                 serveStrategy: 'Wwwision\PrivateResources\Http\FileServeStrategy\XAccelRedirectStrategy'
+```
+
+#### Stream ####
+
+This strategy uses the read-only stream offered by the ResourceManager. It should be compatible with all
+StorageInterfaces and supports external storage (e.g. AWS S3, Google Cloud Storage GCS). But this has some
+drawbacks because it has to pipe the whole file through the PHP process consuming a lot of memory and CPU time.
+
+It can be activated with:
+
+```yaml
+Neos:
+  Flow:
+    http:
+      chain:
+        'process':
+          chain:
+            'protectedResources':
+              componentOptions:
+                serveStrategy: 'Wwwision\PrivateResources\Http\FileServeStrategy\StreamStrategy'
 ```
 
 #### Custom strategy ####

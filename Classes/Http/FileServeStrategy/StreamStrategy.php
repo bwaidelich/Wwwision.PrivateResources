@@ -10,14 +10,14 @@ use Neos\Flow\ResourceManagement\PersistentResource;
 use Psr\Http\Message\ResponseInterface as HttpResponseInterface;
 use Wwwision\PrivateResources\Utility\ProtectedResourceUtility;
 
+use function GuzzleHttp\Psr7\stream_for;
+
 /**
- * A file serve strategy that uses the custom "X-Sendfile" header to let Apache servers handle the file download.
- *
- * Note: This needs the "mod_xsendfile" Apache module to be installed and configured, see https://tn123.org/mod_xsendfile/
+ * A file serve strategy that streams the given resource
  *
  * @Flow\Scope("singleton")
  */
-class XSendfileStrategy implements FileServeStrategyInterface
+class StreamStrategy implements FileServeStrategyInterface
 {
 
     /**
@@ -28,11 +28,11 @@ class XSendfileStrategy implements FileServeStrategyInterface
      */
     public function serve(PersistentResource $resource, HttpResponseInterface $httpResponse, array $options): HttpResponseInterface
     {
-        $filePathAndName = ProtectedResourceUtility::getStoragePathAndFilenameByHash($resource->getSha1(), $options['basePath']);
+        $stream = $resource->getStream();
 
         /** @var HttpResponseInterface $response */
-        $response = $httpResponse->withHeader('X-Sendfile', $filePathAndName);
+        $response = $httpResponse->withBody(stream_for($stream));
         return $response;
-
     }
+
 }
