@@ -106,20 +106,6 @@ class ProtectedResourceComponent implements ComponentInterface
                 chr(10), $tokenData['resourceIdentifier']), 1429621743);
         }
 
-        // TODO there should be a better way to determine the absolute path of the resource? Resource::createTemporaryLocalCopy() is too expensive
-        $resourcePathAndFilename = Files::concatenatePaths([
-            $this->options['basePath'],
-            $tokenData['resourceIdentifier'][0],
-            $tokenData['resourceIdentifier'][1],
-            $tokenData['resourceIdentifier'][2],
-            $tokenData['resourceIdentifier'][3],
-            $tokenData['resourceIdentifier']
-        ]);
-        if (!is_file($resourcePathAndFilename)) {
-            throw new FileNotFoundException(sprintf('File not found!%sThe file "%s" does not exist', chr(10),
-                $resourcePathAndFilename), 1429702284);
-        }
-
         if (!isset($this->options['serveStrategy'])) {
             throw new FlowException('No "serveStrategy" configured!', 1429704107);
         }
@@ -136,7 +122,7 @@ class ProtectedResourceComponent implements ComponentInterface
 
         $this->emitResourceServed($resource, $httpRequest);
 
-        $fileServeStrategy->serve($resourcePathAndFilename, $httpResponse);
+        $fileServeStrategy->serve($resource, $httpResponse, $this->options);
         $componentContext->setParameter(ComponentChain::class, 'cancel', true);
     }
 
