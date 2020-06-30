@@ -6,7 +6,8 @@ namespace Wwwision\PrivateResources\Http\FileServeStrategy;
  *                                                                             */
 
 use Neos\Flow\Http\Response as HttpResponse;
-use Psr\Http\Message\ResponseInterface;
+use Neos\Flow\ResourceManagement\PersistentResource;
+use Psr\Http\Message\ResponseInterface as HttpResponseInterface;
 
 /**
  * Contract for a strategy that allows for serving files outside of the public folder structure
@@ -15,9 +16,10 @@ interface FileServeStrategyInterface
 {
 
     /**
-     * @param string $filePathAndName Absolute path to the file to serve
-     * @param ResponseInterface $httpResponse The current HTTP response (allows setting headers, ...)
-     * @return ResponseInterface
+     * @param PersistentResource $resource Resource of the file to serve
+     * @param HttpResponseInterface $httpResponse The current HTTP response (allows setting headers, ...)
+     * @param array $options
+     * @return HttpResponseInterface
      */
-    public function serve($filePathAndName, ResponseInterface $httpResponse): ResponseInterface;
+    public function serve(PersistentResource $resource, HttpResponseInterface $httpResponse, array $options): HttpResponseInterface;
 }
