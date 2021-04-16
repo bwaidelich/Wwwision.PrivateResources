@@ -1,19 +1,5 @@
 Neos:
   Flow:
-    http:
-      chain:
-        'process':
-          chain:
-            'protectedResources':
-              position: 'before routing'
-              component: 'Wwwision\PrivateResources\Http\Component\ProtectedResourceComponent'
-              componentOptions:
-                 # absolute root path of resources
-                basePath: '%FLOW_PATH_DATA%Persistent/Resources/'
-
-                 # how the file should be served (see README)
-                serveStrategy: 'Wwwision\PrivateResources\Http\FileServeStrategy\ReadfileStrategy'
-
     resource:
       targets:
         'protectedResourcesTarget':

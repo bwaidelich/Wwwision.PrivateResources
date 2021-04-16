@@ -23,7 +23,7 @@ Disclaimer:
 With this package user's can't easily share URLs to protected resources as they will only work for users with the same
 roles. However, resources will still be downloaded obviously and users can share them otherwise.
 Furthermore serving private resources consumes more time and memory because every hit triggers a PHP request.
-Conclusion: This package is only useful in very rare cases ;) 
+Conclusion: This package is only useful in very rare cases ;)
 
 Version:
 --------
@@ -35,7 +35,8 @@ Note: The releases version 3.4.0 is not compatible with Flow < 6.
 | Branch / Release   | Supported Flow version |
 | ------------------ | ---------------------- |
 | 3.x, 4.x           | 4.1, 5.x               |
-| 3.4, 5.x, master   | 6.x                    |
+| 3.4, 5.x           | 6.x                    |
+| 6.x, master        | 7.x                    |
 
 How-To:
 -------
@@ -49,7 +50,7 @@ Concept:
 
 This package provides a custom [Resource Publishing Target](https://flowframework.readthedocs.io/en/stable/TheDefinitiveGuide/PartIII/ResourceManagement.html#target)
 that prevents resources from being published to the accessible file system. Instead it generates a token link that, when requested, invokes a
-[HTTP Component](https://flowframework.readthedocs.io/en/stable/TheDefinitiveGuide/PartIII/Http.html#component-chain) that in turn serves the
+[HTTP Middleware](https://flowframework.readthedocs.io/en/stable/TheDefinitiveGuide/PartIII/Http.html#middlewares-chain) that in turn serves the
 corresponding resource if the current user is allowed to access it.
 
 Configuration:
@@ -109,7 +110,7 @@ Neos:
 
 With this configuration, tokens will expire after 86400 seconds (= one day).
 
-**NOTE:** This option is only considered for "whitelisted" tokens that are not bound to a role or security context hash 
+**NOTE:** This option is only considered for "whitelisted" tokens that are not bound to a role or security context hash
 
 **NOTE:** If the publishing of the resource is cached, this might lead to broken resources (e.g. if you use this within
 Neos CMS within a Node Type with a cache lifetime larger than the tokenLifetime).
@@ -153,11 +154,11 @@ Neos:
 
 **NOTE:** With this option it's allowed to create the resource URLs asynchronous and/or via CLI because it doesn't require an initialized Security Context
 
-### HTTP Component ###
+### HTTP Middleware ###
 
-The actual serving of protected files is done using a ``HTTP Component`` that will be triggered even before the regular
+The actual serving of protected files is done using a ``HTTP Middleware`` that will be triggered even before the regular
 routing kicks in.
-This ``ProtectedResourceComponent`` is already configured and if it comes across an HTTP requests with an
+This ``ProtectedResourceMiddleware`` is already configured and if it comes across an HTTP requests with an
 "__protectedResource" argument it will validate the hash and output the requested file, if valid.
 
 By default it uses PHPs ``readfile()`` function to stream a local file from its inaccessible location to the client, but
@@ -166,7 +167,7 @@ especially for larger files.
 
 To support external cloud storage use the `StreamStrategy` described further below.
 
-To improve performance and memory footprint you can therefore configure the component to use different strategies to
+To improve performance and memory footprint you can therefore configure the middleware to use different strategies to
 serve the file:
 
 #### X-Sendfile (Apache) ####
@@ -178,18 +179,13 @@ Assuming you have the Apache module installed and configured to access files wit
 directory of your installation, you can activate the ``XSendfileStrategy`` with the following settings:
 
 ```yaml
-Neos:
-  Flow:
-    http:
-      chain:
-        'process':
-          chain:
-            'protectedResources':
-              componentOptions:
-                serveStrategy: 'Wwwision\PrivateResources\Http\FileServeStrategy\XSendfileStrategy'
+Wwwision:
+  PrivateResources:
+    middleware:
+      serveStrategy: 'Wwwision\PrivateResources\Http\FileServeStrategy\XSendfileStrategy'
 ```
 
-Instead of using ``readfile()`` to serve the file, the HTTP Component will then send an `X-Sendfile` header pointing to
+Instead of using ``readfile()`` to serve the file, the HTTP Middleware will then send an `X-Sendfile` header pointing to
 the internal file, letting Apache take care of the download.
 
 #### X-Accel-Redirect (Nginx) ####
@@ -200,15 +196,10 @@ Similar to the ``X-Sendfile`` mechanism, the ``X-Accel-Redirect`` allows for int
 It can be activated with:
 
 ```yaml
-Neos:
-  Flow:
-    http:
-      chain:
-        'process':
-          chain:
-            'protectedResources':
-              componentOptions:
-                serveStrategy: 'Wwwision\PrivateResources\Http\FileServeStrategy\XAccelRedirectStrategy'
+Wwwision:
+  PrivateResources:
+    middleware:
+      serveStrategy: 'Wwwision\PrivateResources\Http\FileServeStrategy\XAccelRedirectStrategy'
 ```
 
 #### Stream ####
@@ -220,15 +211,10 @@ drawbacks because it has to pipe the whole file through the PHP process consumin
 It can be activated with:
 
 ```yaml
-Neos:
-  Flow:
-    http:
-      chain:
-        'process':
-          chain:
-            'protectedResources':
-              componentOptions:
-                serveStrategy: 'Wwwision\PrivateResources\Http\FileServeStrategy\StreamStrategy'
+Wwwision:
+  PrivateResources:
+    middleware:
+      serveStrategy: 'Wwwision\PrivateResources\Http\FileServeStrategy\StreamStrategy'
 ```
 
 #### Custom strategy ####
@@ -239,7 +225,7 @@ With this you could for example realize protected CDN resources.
 Signals
 -------
 
-The HTTP Component triggers a signal whenever a protected resource is being accessed (see Flow documentation regarding
+The HTTP Middleware triggers a signal whenever a protected resource is being accessed (see Flow documentation regarding
 more details about **Signals and Slots**).
 You can use that signal to count file downloads for example:
 
@@ -250,7 +236,7 @@ You can use that signal to count file downloads for example:
  */
 public function boot(Bootstrap $bootstrap) {
 	$dispatcher = $bootstrap->getSignalSlotDispatcher();
-	$dispatcher->connect(ProtectedResourceComponent::class, 'resourceServed', function(Resource $resource, HttpRequest $httpRequest) {
+	$dispatcher->connect(ProtectedResourceMiddleware::class, 'resourceServed', function(Resource $resource, HttpRequest $httpRequest) {
 		// increase counter for the given $resource
 	});
 }
@@ -258,11 +244,11 @@ public function boot(Bootstrap $bootstrap) {
 
 The following signals are emitted:
 
-* `ProtectedResourceComponent:resourceServed(PersistentResource $resource, HttpRequest $httpRequest)` whenever a private resource is served
-* `ProtectedResourceComponent:accessDenied(array $tokenData, HttpRequest $httpRequest)`
+* `ProtectedResourceMiddleware:resourceServed(PersistentResource $resource, HttpRequest $httpRequest)` whenever a private resource is served
+* `ProtectedResourceMiddleware:accessDenied(array $tokenData, HttpRequest $httpRequest)`
 
 The following signal is still emitted for backwards compatibility, but is deprecated in favor of `accessDenied`:
-* `ProtectedResourceComponent:invalidSecurityContextHash(array $tokenData, HttpRequest $httpRequest)`
+* `ProtectedResourceMiddleware:invalidSecurityContextHash(array $tokenData, HttpRequest $httpRequest)`
 
 Known issues and limitations
 ----------------------------

@@ -5,13 +5,9 @@ namespace Wwwision\PrivateResources\Utility;
  * This script belongs to the Neos Flow package "Wwwision.PrivateResources".   *
  *                                                                             */
 
-use Neos\Flow\Annotations as Flow;
 use Neos\Utility\Files;
-use Wwwision\PrivateResources\Http\Component\Exception\FileNotFoundException;
+use Wwwision\PrivateResources\Http\Middleware\Exception\FileNotFoundException;
 
-/**
- * A HTTP Component that checks for the request argument "__protectedResource" and outputs the requested resource if the client tokens match
- */
 class ProtectedResourceUtility
 {
 
@@ -22,7 +18,7 @@ class ProtectedResourceUtility
      * @return string
      * @throws FileNotFoundException
      */
-    public static function getStoragePathAndFilenameByHash($sha1Hash, $basePath)
+    public static function getStoragePathAndFilenameByHash(string $sha1Hash, string $basePath): string
     {
         // TODO there should be a better way to determine the absolute path of the resource? Resource::createTemporaryLocalCopy() is too expensive
         $resourcePathAndFilename = Files::concatenatePaths(

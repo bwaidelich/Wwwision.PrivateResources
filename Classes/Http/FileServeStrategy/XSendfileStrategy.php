@@ -8,6 +8,7 @@ namespace Wwwision\PrivateResources\Http\FileServeStrategy;
 use Neos\Flow\Annotations as Flow;
 use Neos\Flow\ResourceManagement\PersistentResource;
 use Psr\Http\Message\ResponseInterface as HttpResponseInterface;
+use Wwwision\PrivateResources\Http\Middleware\Exception\FileNotFoundException;
 use Wwwision\PrivateResources\Utility\ProtectedResourceUtility;
 
 /**
@@ -25,14 +26,11 @@ class XSendfileStrategy implements FileServeStrategyInterface
      * @param HttpResponseInterface $httpResponse The current HTTP response (allows setting headers, ...)
      * @param array $options
      * @return HttpResponseInterface
+     * @throws FileNotFoundException
      */
     public function serve(PersistentResource $resource, HttpResponseInterface $httpResponse, array $options): HttpResponseInterface
     {
         $filePathAndName = ProtectedResourceUtility::getStoragePathAndFilenameByHash($resource->getSha1(), $options['basePath']);
-
-        /** @var HttpResponseInterface $response */
-        $response = $httpResponse->withHeader('X-Sendfile', $filePathAndName);
-        return $response;
-
+        return $httpResponse->withHeader('X-Sendfile', $filePathAndName);
     }
 }
