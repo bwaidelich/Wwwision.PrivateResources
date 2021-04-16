@@ -4,7 +4,7 @@
     "description": "A Flow package that allows for protecting persistent resources from unauthorized access",
     "license": "MIT",
     "require": {
-        "neos/flow": "^6.0",
+        "neos/flow": "^6.0 || ^7.0",
         "guzzlehttp/psr7": "^1.6"
     },
     "autoload": {
