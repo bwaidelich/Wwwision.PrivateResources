@@ -116,9 +116,9 @@ class ProtectedResourceMiddleware implements MiddlewareInterface
                 get_class($fileServeStrategy)), 1429704284);
         }
         /** @var ResponseInterface $httpResponse */
-        $httpResponse = new Response()
-            ->withHeader('Content-Type', $resource->getMediaType());
-            ->withHeader('Content-Disposition', 'attachment;filename="' . $resource->getFilename() . '"');
+        $httpResponse = (new Response())
+            ->withHeader('Content-Type', $resource->getMediaType())
+            ->withHeader('Content-Disposition', 'attachment;filename="' . $resource->getFilename() . '"')
             ->withHeader('Content-Length', $resource->getFileSize());
 
         $this->emitResourceServed($resource, $request);
