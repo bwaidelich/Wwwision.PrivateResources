@@ -1,14 +1,14 @@
 <?php
-namespace Wwwision\PrivateResources\Http\Component;
+namespace Wwwision\PrivateResources\Http\Middleware;
 
 /*                                                                             *
  * This script belongs to the Neos Flow package "Wwwision.PrivateResources".   *
  *                                                                             */
 
+use GuzzleHttp\Psr7\Response;
 use Neos\Flow\Annotations as Flow;
+use Neos\Flow\Configuration\Exception\InvalidConfigurationTypeException;
 use Neos\Flow\Exception as FlowException;
-use Neos\Flow\Http\Component\ComponentContext;
-use Neos\Flow\Http\Component\ComponentInterface;
 use Neos\Flow\Mvc\ActionRequest;
 use Neos\Flow\ObjectManagement\DependencyInjection\DependencyProxy;
 use Neos\Flow\ObjectManagement\ObjectManagerInterface;
@@ -22,17 +22,17 @@ use Neos\Flow\Security\Exception\InvalidHashException;
 use Neos\Flow\Security\Exception\NoSuchRoleException;
 use Neos\Flow\Security\Policy\Role;
 use Neos\Flow\Utility\Now;
-use Neos\Utility\Files;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface as HttpRequestInterface;
-use Wwwision\PrivateResources\Http\Component\Exception\FileNotFoundException;
+use Psr\Http\Server\MiddlewareInterface;
+use Psr\Http\Server\RequestHandlerInterface;
+use Wwwision\PrivateResources\Http\Middleware\Exception\FileNotFoundException;
 use Wwwision\PrivateResources\Http\FileServeStrategy\FileServeStrategyInterface;
-use Neos\Flow\Http\Component\ComponentChain;
 
 /**
- * A HTTP Component that checks for the request argument "__protectedResource" and outputs the requested resource if the client tokens match
+ * A HTTP Middleware that checks for the request argument "__protectedResource" and outputs the requested resource if the client tokens match
  */
-class ProtectedResourceComponent implements ComponentInterface
+class ProtectedResourceMiddleware implements MiddlewareInterface
 {
 
     /**
@@ -66,31 +66,30 @@ class ProtectedResourceComponent implements ComponentInterface
     protected $now;
 
     /**
+     * @Flow\InjectConfiguration(path="middleware")
      * @var array
      */
     protected $options;
 
-    /**
-     * @param array $options
-     */
-    public function __construct(array $options = [])
-    {
-        $this->options = $options;
-    }
 
     /**
-     * @param ComponentContext $componentContext
-     * @return void
-     * @throws FileNotFoundException|AccessDeniedException|FlowException
+     * @param HttpRequestInterface $request
+     * @param RequestHandlerInterface $handler
+     * @return ResponseInterface
+     * @throws AccessDeniedException
+     * @throws FileNotFoundException
+     * @throws FlowException
+     * @throws InvalidConfigurationTypeException
+     * @throws NoSuchRoleException
+     * @throws SecurityException
+     * @throws SecurityException\InvalidArgumentForHashGenerationException
      */
-    public function handle(ComponentContext $componentContext)
+    public function process(HttpRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        /** @var HttpRequestInterface $httpRequest */
-        $httpRequest = $componentContext->getHttpRequest();
-        $queryParams = $httpRequest->getQueryParams();
+        $queryParams = $request->getQueryParams();
 
         if (!array_key_exists('__protectedResource', $queryParams) || $queryParams['__protectedResource'] === '' || $queryParams['__protectedResource'] === false) {
-            return;
+            return $handler->handle($request);
         }
         try {
             $encodedResourceData = $this->hashService->validateAndStripHmac($queryParams['__protectedResource']);
@@ -99,8 +98,8 @@ class ProtectedResourceComponent implements ComponentInterface
         }
         $tokenData = json_decode(base64_decode($encodedResourceData), true);
 
-        $this->verifyExpiration($tokenData, $httpRequest);
-        $this->verifySecurityContext($tokenData, $httpRequest);
+        $this->verifyExpiration($tokenData, $request);
+        $this->verifySecurityContext($tokenData, $request);
 
         $resource = $this->resourceManager->getResourceBySha1($tokenData['resourceIdentifier']);
         if ($resource === null) {
@@ -117,16 +116,13 @@ class ProtectedResourceComponent implements ComponentInterface
                 get_class($fileServeStrategy)), 1429704284);
         }
         /** @var ResponseInterface $httpResponse */
-        $httpResponse = $componentContext->getHttpResponse()
-            ->withHeader('Content-Type', $resource->getMediaType())
-            ->withHeader('Content-Disposition', 'attachment;filename="' . $resource->getFilename() . '"')
-            ->withHeader('Content-Length', $resource->getFileSize());
+        $httpResponse = new Response();
+        $httpResponse = $httpResponse->withHeader('Content-Type', $resource->getMediaType());
+        $httpResponse = $httpResponse->withHeader('Content-Disposition', 'attachment;filename="' . $resource->getFilename() . '"');
+        $httpResponse = $httpResponse->withHeader('Content-Length', $resource->getFileSize());
 
-        $this->emitResourceServed($resource, $httpRequest);
-
-        $httpResponse = $fileServeStrategy->serve($resource, $httpResponse, $this->options);
-        $componentContext->replaceHttpResponse($httpResponse);
-        $componentContext->setParameter(ComponentChain::class, 'cancel', true);
+        $this->emitResourceServed($resource, $request);
+        return $fileServeStrategy->serve($resource, $httpResponse, $this->options);
     }
 
     /**
@@ -134,10 +130,9 @@ class ProtectedResourceComponent implements ComponentInterface
      *
      * @param array $tokenData
      * @param HttpRequestInterface $httpRequest
-     * @return void
      * @throws AccessDeniedException
      */
-    protected function verifyExpiration(array $tokenData, HttpRequestInterface $httpRequest)
+    protected function verifyExpiration(array $tokenData, HttpRequestInterface $httpRequest): void
     {
         if (!isset($tokenData['expirationDateTime'])) {
             return;
@@ -157,10 +152,12 @@ class ProtectedResourceComponent implements ComponentInterface
      *
      * @param array $tokenData
      * @param HttpRequestInterface $httpRequest
-     * @return void
-     * @throws AccessDeniedException | SecurityException | NoSuchRoleException
+     * @throws AccessDeniedException
+     * @throws InvalidConfigurationTypeException
+     * @throws NoSuchRoleException
+     * @throws SecurityException
      */
-    protected function verifySecurityContext(array $tokenData, HttpRequestInterface $httpRequest)
+    protected function verifySecurityContext(array $tokenData, HttpRequestInterface $httpRequest): void
     {
         if (!isset($tokenData['securityContextHash']) && !isset($tokenData['privilegedRole'])) {
             return;
@@ -191,7 +188,7 @@ class ProtectedResourceComponent implements ComponentInterface
      * @param HttpRequestInterface $httpRequest the current HTTP request
      * @return void
      */
-    protected function emitResourceServed(PersistentResource $resource, HttpRequestInterface $httpRequest)
+    protected function emitResourceServed(PersistentResource $resource, HttpRequestInterface $httpRequest): void
     {
     }
 
@@ -203,7 +200,7 @@ class ProtectedResourceComponent implements ComponentInterface
      * @param HttpRequestInterface $httpRequest the current HTTP request
      * @return void
      */
-    protected function emitAccessDenied(array $tokenData, HttpRequestInterface $httpRequest)
+    protected function emitAccessDenied(array $tokenData, HttpRequestInterface $httpRequest): void
     {
     }
 
@@ -216,7 +213,7 @@ class ProtectedResourceComponent implements ComponentInterface
      * @param HttpRequestInterface $httpRequest the current HTTP request
      * @return void
      */
-     protected function emitInvalidSecurityContextHash(array $tokenData, HttpRequestInterface $httpRequest)
+     protected function emitInvalidSecurityContextHash(array $tokenData, HttpRequestInterface $httpRequest): void
      {
      }
 }

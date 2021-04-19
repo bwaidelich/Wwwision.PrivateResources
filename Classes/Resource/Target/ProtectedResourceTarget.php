@@ -199,7 +199,7 @@ class ProtectedResourceTarget implements TargetInterface
             if (!$requestHandler instanceof HttpRequestHandlerInterface) {
                 return null;
             }
-            $this->httpRequest = $requestHandler-> getComponentContext()->getHttpRequest();
+            $this->httpRequest = $requestHandler->getHttpRequest();
         }
         return $this->httpRequest;
     }

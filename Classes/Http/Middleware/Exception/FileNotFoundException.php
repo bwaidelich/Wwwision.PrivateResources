@@ -1,5 +1,5 @@
 <?php
-namespace Wwwision\PrivateResources\Http\Component\Exception;
+namespace Wwwision\PrivateResources\Http\Middleware\Exception;
 
 /*                                                                             *
  * This script belongs to the Neos Flow package "Wwwision.PrivateResources".   *

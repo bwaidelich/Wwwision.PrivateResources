@@ -5,7 +5,6 @@ namespace Wwwision\PrivateResources\Http\FileServeStrategy;
  * This script belongs to the Neos Flow package "Wwwision.PrivateResources".   *
  *                                                                             */
 
-use Neos\Flow\Http\Response as HttpResponse;
 use Neos\Flow\ResourceManagement\PersistentResource;
 use Psr\Http\Message\ResponseInterface as HttpResponseInterface;
 

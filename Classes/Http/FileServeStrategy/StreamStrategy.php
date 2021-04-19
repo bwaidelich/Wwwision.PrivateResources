@@ -5,12 +5,10 @@ namespace Wwwision\PrivateResources\Http\FileServeStrategy;
  * This script belongs to the Neos Flow package "Wwwision.PrivateResources".   *
  *                                                                             */
 
+use GuzzleHttp\Psr7\Utils;
 use Neos\Flow\Annotations as Flow;
 use Neos\Flow\ResourceManagement\PersistentResource;
 use Psr\Http\Message\ResponseInterface as HttpResponseInterface;
-use Wwwision\PrivateResources\Utility\ProtectedResourceUtility;
-
-use function GuzzleHttp\Psr7\stream_for;
 
 /**
  * A file serve strategy that streams the given resource
@@ -30,9 +28,7 @@ class StreamStrategy implements FileServeStrategyInterface
     {
         $stream = $resource->getStream();
 
-        /** @var HttpResponseInterface $response */
-        $response = $httpResponse->withBody(stream_for($stream));
-        return $response;
+        return $httpResponse->withBody(Utils::streamFor($stream));
     }
 
 }

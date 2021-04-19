@@ -1,0 +1,16 @@
+Neos:
+  Flow:
+    http:
+      middlewares:
+        'protectedResources':
+          position: 'before routing'
+          middleware: 'Wwwision\PrivateResources\Http\Middleware\ProtectedResourceMiddleware'
+
+Wwwision:
+  PrivateResources:
+    middleware:
+      # absolute root path of resources
+      basePath: '%FLOW_PATH_DATA%Persistent/Resources/'
+      # how the file should be served (see README)
+      serveStrategy: 'Wwwision\PrivateResources\Http\FileServeStrategy\ReadfileStrategy'
+
