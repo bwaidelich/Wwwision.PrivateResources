@@ -28,7 +28,7 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Wwwision\PrivateResources\Http\Middleware\Exception\FileNotFoundException;
 use Wwwision\PrivateResources\Http\FileServeStrategy\FileServeStrategyInterface;
-use Neos\Neos\Controller\Backend\BackendController;
+use Neos\Neos\Controller\Frontend\NodeController;
 
 
 /**
@@ -165,7 +165,7 @@ class ProtectedResourceMiddleware implements MiddlewareInterface
             return;
         }
         $actionRequest = ActionRequest::fromHttpRequest($httpRequest);
-        $actionRequest->setControllerObjectName(BackendController::class);
+        $actionRequest->setControllerObjectName(NodeController::class);
         $this->securityContext->setRequest($actionRequest);
         if (isset($tokenData['privilegedRole'])) {
             if ($this->securityContext->hasRole($tokenData['privilegedRole'])) {
