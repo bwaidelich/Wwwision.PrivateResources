@@ -28,6 +28,8 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Wwwision\PrivateResources\Http\Middleware\Exception\FileNotFoundException;
 use Wwwision\PrivateResources\Http\FileServeStrategy\FileServeStrategyInterface;
+use Neos\Neos\Controller\Backend\BackendController;
+
 
 /**
  * A HTTP Middleware that checks for the request argument "__protectedResource" and outputs the requested resource if the client tokens match
@@ -163,6 +165,7 @@ class ProtectedResourceMiddleware implements MiddlewareInterface
             return;
         }
         $actionRequest = ActionRequest::fromHttpRequest($httpRequest);
+        $actionRequest->setControllerObjectName(BackendController::class);
         $this->securityContext->setRequest($actionRequest);
         if (isset($tokenData['privilegedRole'])) {
             if ($this->securityContext->hasRole($tokenData['privilegedRole'])) {
