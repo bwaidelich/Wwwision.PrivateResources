@@ -36,7 +36,7 @@ Note: The releases version 3.4.0 is not compatible with Flow < 6.
 | ------------------ | ---------------------- |
 | 3.x, 4.x           | 4.1, 5.x               |
 | 3.4, 5.x           | 6.x                    |
-| 6.x, master        | 7.x                    |
+| 6.x, master        | 7.x, 8.x               |
 
 How-To:
 -------
