@@ -13,4 +13,6 @@ Wwwision:
       basePath: '%FLOW_PATH_DATA%Persistent/Resources/'
       # how the file should be served (see README)
       serveStrategy: 'Wwwision\PrivateResources\Http\FileServeStrategy\ReadfileStrategy'
+      # If set, the specified controller is simulated (see README)
+      # controllerObjectName: 'Neos\Neos\Controller\Frontend\NodeController'
 

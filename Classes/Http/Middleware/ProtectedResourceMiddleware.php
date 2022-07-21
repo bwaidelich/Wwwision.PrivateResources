@@ -163,6 +163,9 @@ class ProtectedResourceMiddleware implements MiddlewareInterface
             return;
         }
         $actionRequest = ActionRequest::fromHttpRequest($httpRequest);
+        if (isset($this->options['controllerObjectName'])) {
+            $actionRequest->setControllerObjectName($this->options['controllerObjectName']);
+        }
         $this->securityContext->setRequest($actionRequest);
         if (isset($tokenData['privilegedRole'])) {
             if ($this->securityContext->hasRole($tokenData['privilegedRole'])) {

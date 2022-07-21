@@ -250,10 +250,39 @@ The following signals are emitted:
 The following signal is still emitted for backwards compatibility, but is deprecated in favor of `accessDenied`:
 * `ProtectedResourceMiddleware:invalidSecurityContextHash(array $tokenData, HttpRequest $httpRequest)`
 
+Neos CMS
+--------
+
+This package works well with [Neos CMS](https://www.neos.io), but Neos currently doesn't offer a way to select a *resource collection*
+when uploading files or working with the Media Module. You can, however, activate protected resources globally (see above) or create
+custom editors for your protected file uploads.
+
+### Authentication ###
+
+In order to limit access to *Neos Backend users* the [Request Patterns](https://flowframework.readthedocs.io/en/stable/TheDefinitiveGuide/PartIII/Security.html#request-patterns)
+have to match the `/__protectedResource?token=<token>` request in order for the Neos authentication to be active.
+Starting with version 6.2 the `controllerObjectName` option can be used to simulate a Neos controller, for example:
+
+```yaml
+Neos:
+  Flow:
+    resource:
+      targets:
+        'protectedResourcesTarget':
+          targetOptions:
+            # Limit access to Neos editors
+            privilegedRole: 'Neos.Neos:Editor'
+            
+Wwwision:
+  PrivateResources:
+    middleware:
+      # Simulate the NodeController to be invoked such that the Neos authentication gets activated
+      controllerObjectName: 'Neos\Neos\Controller\Frontend\NodeController'
+```
+
+*Note:* If there are more request pattern types configured, those might have to be adjusted/removed
+
 Known issues and limitations
 ----------------------------
 
-* This package works well with [Neos CMS](https://www.neos.io), but Neos currently doesn't offer a way to select a *resource collection*
-  when uploading files or working with the Media Module. You can, however, activate protected resources globally (see
-  above) or create custom editors for your protected file uploads
 * Private resources currently only work for **persistent** resources. **Static** resources are not yet covered
