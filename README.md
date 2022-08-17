@@ -230,15 +230,20 @@ more details about **Signals and Slots**).
 You can use that signal to count file downloads for example:
 
 ```php
-/**
- * @param Bootstrap $bootstrap The current bootstrap
- * @return void
- */
-public function boot(Bootstrap $bootstrap) {
-	$dispatcher = $bootstrap->getSignalSlotDispatcher();
-	$dispatcher->connect(ProtectedResourceMiddleware::class, 'resourceServed', function(Resource $resource, HttpRequest $httpRequest) {
-		// increase counter for the given $resource
-	});
+use Neos\Flow\Core\Bootstrap;
+use Neos\Flow\ResourceManagement\PersistentResource;
+use Psr\Http\Message\ServerRequestInterface as HttpRequestInterface;
+use Wwwision\PrivateResources\Http\Middleware\ProtectedResourceMiddleware;
+
+final class Package extends \Neos\Flow\Package
+{
+    public function boot(Bootstrap $bootstrap): void
+    {
+        $dispatcher = $bootstrap->getSignalSlotDispatcher();
+        $dispatcher->connect(ProtectedResourceMiddleware::class, 'resourceServed', function (PersistentResource $resource, HttpRequestInterface $httpRequest) {
+            // increase counter for the given $resource
+        });
+    }
 }
 ```
 
