@@ -19,7 +19,7 @@ use Psr\Http\Message\ServerRequestInterface as HttpRequestInterface;
 
 /**
  * A resource target that does not publish resources directly.
- * Instead it generates a token link that is bound to the current client.
+ * Instead, it generates a token link that is bound to the current client.
  * The token can be consumed by the ProtectedResourceComponent HTTP component
  */
 class ProtectedResourceTarget implements TargetInterface
@@ -109,6 +109,15 @@ class ProtectedResourceTarget implements TargetInterface
     public function publishResource(PersistentResource $resource, CollectionInterface $collection)
     {
         // publishing is not required for protected resources
+    }
+
+    /**
+     * @param \Closure $callback
+     * @return void
+     */
+    public function onPublish(\Closure $callback): void
+    {
+        // this event is not handled for protected resources
     }
 
     /**
